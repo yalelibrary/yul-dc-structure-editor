@@ -9,7 +9,9 @@ const { Sider, Content } = Layout;
 
 function App() {
 
-  const [isModalVisible, setIsModalVisible] = React.useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any}>({});
+
 
   const handleOpenModal = () => {
     setIsModalVisible(true);
@@ -18,7 +20,11 @@ function App() {
   const setApiKeyAndManifest = (apiKey: string, manifestUrl: string) => {
     setApiKeyGlobal(apiKey);
     downloadManifest(manifestUrl).then((manifest) => {
-      console.log(manifest);
+      setLoadedManifest(manifest);
+    }).catch((error) => {
+      error.response.then((info: JSON) => {
+        setLoadedManifest(info)
+      })
     });
   }
 
@@ -31,7 +37,8 @@ function App() {
           <p>tree</p>
         </Sider>
         <Content>
-          <p>images</p>
+          {JSON.stringify(loadedManifest)}
+          {/* <p>images</p> */}
         </Content>
       </Layout>
     </Layout>

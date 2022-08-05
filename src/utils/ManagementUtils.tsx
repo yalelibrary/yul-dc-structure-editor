@@ -4,10 +4,10 @@ export class FetchError extends Error {
   status: number;
   response?: Promise<string>;
 
-  constructor(message: string, status: number, json?: Promise<any>) {
+  constructor(message: string, status: number, response?: Promise<any>) {
       super(message);
       this.status = status;
-      this.response = json;
+      this.response = response;
   }
 }
 
