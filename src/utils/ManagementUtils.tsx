@@ -2,9 +2,9 @@
 export class FetchError extends Error {
 
   status: number;
-  response?: Promise<string>;
+  response?: any;
 
-  constructor(message: string, status: number, response?: Promise<any>) {
+  constructor(message: string, status: number, response?: any) {
       super(message);
       this.status = status;
       this.response = response;
@@ -26,11 +26,12 @@ export function apiFetchJsonUri(token: string, uri: string): Promise<any> {
       options["headers"] = headers;
       options["credentials"] = "include";
   }
-  return fetch(uri, options).then(response => {
+  return fetch(uri, options).then(async response => {
       if (response.ok) {
           return response.json();
       } else {
-          throw new FetchError("Error Response From Server", response.status, response.json());
+        let json = await response.json();
+        throw new FetchError("Error Response From Server", response.status, json);
       }
   })
 }
