@@ -1,1 +1,27 @@
 @import '~antd/dist/antd.css';
+
+.sider {
+  background-color: white;
+}
+
+.image-list, .tree-view, .simple-list {
+  overflow-y: auto;
+  max-height: 100%;
+  user-select: none;
+}
+
+.item-label, .item-label{
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+
+.image-list .item {
+  margin: 3px;
+  display: inline-block;
+  border: 3px solid transparent;
+}
+
+.image-list .item.selected {
+  border: 3px solid blue;
+}
