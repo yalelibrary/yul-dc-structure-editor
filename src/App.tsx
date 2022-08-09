@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Layout } from 'antd';
+import { Layout, Modal } from 'antd';
 import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import LaunchModal from './components/LaunchModal';
@@ -10,8 +10,21 @@ const { Sider, Content } = Layout;
 function App() {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any}>({});
+  const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any} | null>(null);
 
+  const showError = (title: string, content: string) => {
+    Modal.error({
+      title: title,
+      content: content,
+    });
+  };
+
+  const showInfo = (title: string, content: string) => {
+    Modal.info({
+      title: title,
+      content: content,
+    });
+  };
 
   const handleOpenModal = () => {
     setIsModalVisible(true);
@@ -19,12 +32,12 @@ function App() {
 
   const setApiKeyAndManifest = (apiKey: string, manifestUrl: string) => {
     setApiKeyGlobal(apiKey);
+    setLoadedManifest(null);
     downloadManifest(manifestUrl).then((manifest) => {
       setLoadedManifest(manifest);
+      showInfo("Success", "Manifest Downloaded");
     }).catch((error) => {
-      error.response.then((info: JSON) => {
-        setLoadedManifest(info)
-      })
+      showError("Unable to download", error.response?.message || "Error Downloading Manifest");
     });
   }
 
@@ -37,7 +50,7 @@ function App() {
           <p>tree</p>
         </Sider>
         <Content>
-          {JSON.stringify(loadedManifest)}
+          {(loadedManifest && JSON.stringify(loadedManifest)) || "Manifest Not Loaded"}
           {/* <p>images</p> */}
         </Content>
       </Layout>
