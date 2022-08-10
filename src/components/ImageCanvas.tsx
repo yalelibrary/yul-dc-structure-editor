@@ -1,5 +1,6 @@
 import React from 'react';
 import { ManifestCanvasInfo } from '../utils/IIIFUtils';
+import { useInView } from "react-intersection-observer";
 
 
 class ImageListProps {
@@ -10,15 +11,21 @@ class ImageListProps {
 
 
 function ImageCanvas({ canvasInfo, selectedOids, onCanvasClick }: ImageListProps) {
+
+  const { ref, inView } = useInView({
+    threshold: 0,
+  });
+
   return (
-    <div className='image-list'>
+    <div className='image-list' ref={ref}>
       {canvasInfo.map((info) => {
         return <div className={'item' + (selectedOids.includes(info.oid) ? " selected" : "")} key={info.oid} onClick={(e) => {
           if (onCanvasClick) {
             onCanvasClick(info.oid, e.shiftKey, e.metaKey)
           }
         }}>
-          <img src={info.thumbnail} alt={info.label + " " + info.oid} /><br />
+          {inView && <img src={info.thumbnail} loading="lazy" alt={info.label + " " + info.oid} />}
+          <br />
           <span className='item-index'>{(info.index + 1) + ": "}</span> <span className='item-label'>{info.label}</span>
         </div>
       })}

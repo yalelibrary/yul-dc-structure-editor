@@ -1,5 +1,9 @@
 @import '~antd/dist/antd.css';
 
+.main-container {
+  height: 100vh;
+}
+
 .sider {
   background-color: white;
 }

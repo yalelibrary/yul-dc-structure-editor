@@ -92,7 +92,7 @@ function App() {
   }, [loadedManifest])
 
   return (
-    <Layout>
+    <Layout className="main-container">
       <TopHeader onOpenModal={handleOpenModal} />
       <Layout>
         <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest}/>
