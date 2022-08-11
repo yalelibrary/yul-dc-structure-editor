@@ -23,7 +23,7 @@ export type ManifestCanvasInfo = {
 }
 
 
-export type StructureInfoType = "Structure" | "Canvas";
+export type StructureInfoType = "Range" | "Canvas";
 
 export type ManifestStructureInfo = {
   type: StructureInfoType;
@@ -93,10 +93,10 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
 function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfoTree {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
-  let type: StructureInfoType = (structure["type"] === "Canvas") ? "Canvas" : "Structure";
+  let type: StructureInfoType = (structure["type"] === "Canvas") ? "Canvas" : "Range";
   let newItem = false;
   let items = [];
-  if (type === "Structure" && structure["items"]) {
+  if (type === "Range" && structure["items"]) {
     for (let item of structure["items"]) {
       items.push(recursiveExtractStructure(item, itemIdToLabelMap));
     }
