@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestRangeInfo, ManifestRangeInfoTree, rangeInfoFromManifest } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfoTree, structureInfoFromManifest } from './utils/IIIFUtils';
 import './App.css';
 const { Sider, Content } = Layout;
 
@@ -14,7 +14,7 @@ function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any} | null>(null);
   const [canvasInfo, setCanvasInfo] = React.useState<ManifestCanvasInfo[]>([]);
-  const [rangeInfo, setRangeInfo] = React.useState<ManifestRangeInfoTree[]>([]);
+  const [structureInfo, setStructureInfo] = React.useState<ManifestStructureInfoTree[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = React.useState<string[]>([]);
   const [selectStart, setSelectStart] = React.useState<string | null>(null);
 
@@ -87,8 +87,8 @@ function App() {
     canvasInfo && setCanvasInfo(canvasInfo);
     setSelectStart(null);
     setSelectedCanvasIds([]);
-    let rangeInfo = rangeInfoFromManifest(loadedManifest);
-    setRangeInfo(rangeInfo || []);
+    let structureInfo = structureInfoFromManifest(loadedManifest);
+    setStructureInfo(structureInfo || []);
   }, [loadedManifest])
 
   return (
@@ -99,7 +99,7 @@ function App() {
         <Sider className="sider">
           <Tree
                 className='tree-view'
-                treeData={rangeInfo || []}
+                treeData={structureInfo || []}
             />
         </Sider>
         <Content>

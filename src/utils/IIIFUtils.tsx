@@ -23,17 +23,17 @@ export type ManifestCanvasInfo = {
 }
 
 
-export type RangeInfoType = "Range" | "Canvas";
+export type StructureInfoType = "Structure" | "Canvas";
 
-export type ManifestRangeInfo = {
-  type: RangeInfoType;
+export type ManifestStructureInfo = {
+  type: StructureInfoType;
   label: string;
   id: string;
   newItem: boolean;
-  items: ManifestRangeInfo[];
+  items: ManifestStructureInfo[];
 }
 
-export type ManifestRangeInfoTree = ManifestRangeInfo & DataNode
+export type ManifestStructureInfoTree = ManifestStructureInfo & DataNode
 
 
 export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] | null {
@@ -73,8 +73,8 @@ export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] 
   return canvasInfo;
 }
 
-export function rangeInfoFromManifest(manifestData: any): ManifestRangeInfoTree[] | null {
-  let ranges: ManifestRangeInfoTree[] | null = null;
+export function structureInfoFromManifest(manifestData: any): ManifestStructureInfoTree[] | null {
+  let structures: ManifestStructureInfoTree[] | null = null;
   if (manifestData && manifestData["structures"]) {
     let itemIdToLabelMap: any = {};
     for (let item of manifestData["items"]) {
@@ -82,21 +82,21 @@ export function rangeInfoFromManifest(manifestData: any): ManifestRangeInfoTree[
       let label = extractIIIFLabel(item);
       itemIdToLabelMap[id] = label;
     }
-    ranges = [];
+    structures = [];
     for (let structure of manifestData["structures"]) {
-      ranges.push(recursiveExtractStructure(structure, itemIdToLabelMap))
+      structures.push(recursiveExtractStructure(structure, itemIdToLabelMap))
     }
   }
-  return ranges;
+  return structures;
 }
 
-function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestRangeInfoTree {
+function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfoTree {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
-  let type: RangeInfoType = (structure["type"] === "Canvas") ? "Canvas" : "Range";
+  let type: StructureInfoType = (structure["type"] === "Canvas") ? "Canvas" : "Structure";
   let newItem = false;
   let items = [];
-  if (type === "Range" && structure["items"]) {
+  if (type === "Structure" && structure["items"]) {
     for (let item of structure["items"]) {
       items.push(recursiveExtractStructure(item, itemIdToLabelMap));
     }
