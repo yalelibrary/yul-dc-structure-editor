@@ -4,13 +4,13 @@ import { useInView } from "react-intersection-observer";
 
 
 class ImageListProps {
-  selectedOids: string[] = [];
+  selectedCanvasIds: string[] = [];
   canvasInfo: ManifestCanvasInfo[] = [];
-  onCanvasClick?: ((oid: string, shiftKey: boolean, metaKey: boolean) => void);
+  onCanvasClick?: ((canvasId: string, shiftKey: boolean, metaKey: boolean) => void);
 }
 
 
-function ImageCanvas({ canvasInfo, selectedOids, onCanvasClick }: ImageListProps) {
+function ImageCanvas({ canvasInfo, selectedCanvasIds, onCanvasClick }: ImageListProps) {
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -19,9 +19,9 @@ function ImageCanvas({ canvasInfo, selectedOids, onCanvasClick }: ImageListProps
   return (
     <div className='image-list' ref={ref}>
       {canvasInfo.map((info) => {
-        return <div className={'item' + (selectedOids.includes(info.oid) ? " selected" : "")} key={info.oid} onClick={(e) => {
+        return <div className={'item' + (selectedCanvasIds.includes(info.canvasId) ? " selected" : "")} key={info.imageId} onClick={(e) => {
           if (onCanvasClick) {
-            onCanvasClick(info.oid, e.shiftKey, e.metaKey)
+            onCanvasClick(info.canvasId, e.shiftKey, e.metaKey)
           }
         }}>
           {inView && <img src={info.thumbnail} loading="lazy" alt={info.label + " " + info.oid} />}
