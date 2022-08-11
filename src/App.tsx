@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import { Layout, Modal } from 'antd';
+import { Layout, Modal, Tree } from 'antd';
 import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestRangeInfo, ManifestRangeInfoTree, rangeInfoFromManifest } from './utils/IIIFUtils';
 import './App.css';
 const { Sider, Content } = Layout;
 
@@ -14,7 +14,8 @@ function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any} | null>(null);
   const [canvasInfo, setCanvasInfo] = React.useState<ManifestCanvasInfo[]>([]);
-  const [selectedOids, setSelectedOids] = React.useState<string[]>([]);
+  const [rangeInfo, setRangeInfo] = React.useState<ManifestRangeInfoTree[]>([]);
+  const [selectedCanvasIds, setSelectedCanvasIds] = React.useState<string[]>([]);
   const [selectStart, setSelectStart] = React.useState<string | null>(null);
 
   const showError = (title: string, content: string) => {
@@ -46,49 +47,48 @@ function App() {
     });
   }
 
-  const handleCanvasClicked = (oid: string, shiftKey: boolean, metaKey: boolean) => {
+  const handleCanvasClicked = (canvasId: string, shiftKey: boolean, metaKey: boolean) => {
     let newSelections: string[] = [];
     if (metaKey) {
-      if (selectedOids.includes(oid)) {
-        newSelections = selectedOids.filter((soid) => soid !== oid);
-        if (oid === selectStart) setSelectStart(null);
+      if (selectedCanvasIds.includes(canvasId)) {
+        newSelections = selectedCanvasIds.filter((id) => canvasId !== id);
+        if (canvasId === selectStart) setSelectStart(null);
       } else {
-        newSelections = [...selectedOids, oid];
-        setSelectStart(oid);
+        newSelections = [...selectedCanvasIds, canvasId];
+        setSelectStart(canvasId);
       }
-    } else if (shiftKey && selectStart && selectStart !== oid) {
-      newSelections = [...selectedOids];
-      setSelectStart(oid);
+    } else if (shiftKey && selectStart && selectStart !== canvasId) {
+      newSelections = [...selectedCanvasIds];
+      setSelectStart(canvasId);
       let selecting = false;
       for (let c of canvasInfo) {
         if (selecting) {
-          if (!newSelections.includes(c.oid)) newSelections.push(c.oid);
+          if (!newSelections.includes(c.imageId)) newSelections.push(c.canvasId);
         }
-        if (c.oid === selectStart || c.oid === oid) {
+        if (c.canvasId === selectStart || c.canvasId === canvasId) {
           selecting = !selecting;
-          if (!newSelections.includes(c.oid)) newSelections.push(c.oid);
+          if (!newSelections.includes(c.imageId)) newSelections.push(c.canvasId);
         }
       }
     } else {
-      setSelectStart(oid);
-      if (newSelections.includes(oid)) {
-        newSelections = newSelections.filter((o) => o !== oid);
+      setSelectStart(canvasId);
+      if (newSelections.includes(canvasId)) {
+        newSelections = newSelections.filter((o) => o !== canvasId);
       } else {
-        newSelections = [oid];
+        newSelections = [canvasId];
       }
     }
     console.log(newSelections + " " + selectStart);
-    setSelectedOids(newSelections);
+    setSelectedCanvasIds(newSelections);
   }
 
   useEffect(() => {
-    // set the tree data based on the manifests items
     let canvasInfo = canvasInfoFromManifest(loadedManifest);
-    // setTreeData(null);
     canvasInfo && setCanvasInfo(canvasInfo);
     setSelectStart(null);
-    setSelectedOids([]);
-    // setSelectedTreeNode(null);
+    setSelectedCanvasIds([]);
+    let rangeInfo = rangeInfoFromManifest(loadedManifest);
+    setRangeInfo(rangeInfo || []);
   }, [loadedManifest])
 
   return (
@@ -97,10 +97,13 @@ function App() {
       <Layout>
         <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest}/>
         <Sider className="sider">
-          <p>tree</p>
+          <Tree
+                className='tree-view'
+                treeData={rangeInfo || []}
+            />
         </Sider>
         <Content>
-          <ImageCanvas canvasInfo={canvasInfo} selectedOids={selectedOids} onCanvasClick={handleCanvasClicked}/>
+          <ImageCanvas canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} onCanvasClick={handleCanvasClicked}/>
         </Content>
       </Layout>
     </Layout>
