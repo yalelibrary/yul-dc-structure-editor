@@ -13,9 +13,9 @@ function App() {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any} | null>(null);
-  const [canvasInfo, setCanvasInfo] = React.useState<ManifestCanvasInfo[]>([]);
-  const [selectedOids, setSelectedOids] = React.useState<string[]>([]);
-  const [selectStart, setSelectStart] = React.useState<string | null>(null);
+  const [canvasInfo, setCanvasInfo] = useState<ManifestCanvasInfo[]>([]);
+  const [selectedOids, setSelectedOids] = useState<string[]>([]);
+  const [selectStart, setSelectStart] = useState<string | null>(null);
 
   const showError = (title: string, content: string) => {
     Modal.error({
