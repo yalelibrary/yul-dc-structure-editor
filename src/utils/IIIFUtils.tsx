@@ -1,6 +1,3 @@
-import type { DataNode } from 'antd/es/tree';
-
-
 export function extractIIIFLabel(obj: any, defaultValue: string = ""): string {
   if (!obj || !obj["label"]) {
     return defaultValue
@@ -32,9 +29,6 @@ export type ManifestStructureInfo = {
   newItem: boolean;
   items: ManifestStructureInfo[];
 }
-
-export type ManifestStructureInfoTree = ManifestStructureInfo & DataNode
-
 
 export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] | null {
   let canvasInfo: ManifestCanvasInfo[] | null = null;
@@ -73,8 +67,8 @@ export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] 
   return canvasInfo;
 }
 
-export function structureInfoFromManifest(manifestData: any): ManifestStructureInfoTree[] | null {
-  let structures: ManifestStructureInfoTree[] | null = null;
+export function structureInfoFromManifest(manifestData: any): ManifestStructureInfo[] | null {
+  let structures: ManifestStructureInfo[] | null = null;
   if (manifestData && manifestData["structures"]) {
     let itemIdToLabelMap: any = {};
     for (let item of manifestData["items"]) {
@@ -90,7 +84,7 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
   return structures;
 }
 
-function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfoTree {
+function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
   let type: StructureInfoType = (structure["type"] === "Canvas") ? "Canvas" : "Range";
@@ -106,5 +100,5 @@ function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): Manif
     let idParts = id.split("/");
     label += ": (" + idParts[idParts.length -1] + ")";
   }
-  return {key: id, title: label, children: items, label, id, type, newItem, items};
+  return {label, id, type, newItem, items};
 }

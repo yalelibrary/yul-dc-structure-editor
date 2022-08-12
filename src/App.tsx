@@ -1,11 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import { Layout, Modal, Tree } from 'antd';
+import { Layout, Modal } from 'antd';
 import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfoTree, structureInfoFromManifest } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest } from './utils/IIIFUtils';
 import './App.css';
+import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
 
 
@@ -14,7 +15,7 @@ function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any} | null>(null);
   const [canvasInfo, setCanvasInfo] = React.useState<ManifestCanvasInfo[]>([]);
-  const [structureInfo, setStructureInfo] = React.useState<ManifestStructureInfoTree[]>([]);
+  const [structureInfo, setStructureInfo] = React.useState<ManifestStructureInfo[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = React.useState<string[]>([]);
   const [selectStart, setSelectStart] = React.useState<string | null>(null);
 
@@ -82,6 +83,10 @@ function App() {
     setSelectedCanvasIds(newSelections);
   }
 
+  const handleChangeStructureInfo = (structureInfo: ManifestStructureInfo[]) => {
+    setStructureInfo(structureInfo);
+  }
+
   useEffect(() => {
     let canvasInfo = canvasInfoFromManifest(loadedManifest);
     canvasInfo && setCanvasInfo(canvasInfo);
@@ -97,9 +102,9 @@ function App() {
       <Layout>
         <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest}/>
         <Sider className="sider">
-          <Tree
-                className='tree-view'
-                treeData={structureInfo || []}
+          <TreeStructure
+                structureInfo={structureInfo}
+                onChangeStructureInfo={handleChangeStructureInfo}
             />
         </Sider>
         <Content>
