@@ -15,7 +15,7 @@ function TopHeader({addRangeEnabled, onOpenModal, onAddRange}: TopHeaderProps) {
         Get Manifest
       </Button>
       <Button onClick={onAddRange} disabled={!addRangeEnabled}>
-        +
+        Range +
       </Button>
     </Header>);
 }
