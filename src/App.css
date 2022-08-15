@@ -29,3 +29,12 @@
 .image-list .item.selected {
   border: 3px solid blue;
 }
+
+.selected-node {
+  background-color: aqua;
+}
+
+.edit-text {
+  color: black;
+  background-color: white;
+}
