@@ -97,6 +97,9 @@ export function createNewRange(): ManifestStructureInfo {
 }
 
 export function addNewRange(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo[] {
+  if (structureInfo.length < 1) {
+    return [createNewRange()]
+  }
   return structureInfo.map((structure) => {
     if (structure.id === id) {
       if (structure.type === "Range") {
@@ -108,6 +111,22 @@ export function addNewRange(structureInfo: ManifestStructureInfo[], id: string):
       }
     } else {
       return { ...structure, items: addNewRange(structure.items, id) };
+    }
+  });
+}
+
+export function addNewCanvas(structureInfo: ManifestStructureInfo[], id: string, canvasInfoSet: ManifestCanvasInfo[]): ManifestStructureInfo[] {
+  return structureInfo.map((structure) => {
+    if (structure.id === id) {
+      if (structure.type === "Range") {
+        let newItems = [...structure.items];
+        canvasInfoSet.forEach((c) => newItems.push({id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true}));
+        return { ...structure, items: newItems };
+      } else {
+        return structure;
+      }
+    } else {
+      return { ...structure, items: addNewCanvas(structure.items, id, canvasInfoSet) };
     }
   });
 }
