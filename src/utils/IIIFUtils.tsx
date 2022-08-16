@@ -21,7 +21,6 @@ export type ManifestCanvasInfo = {
   index: number;
 }
 
-
 export type StructureInfoType = "Range" | "Canvas";
 
 export type ManifestStructureInfo = {
@@ -139,6 +138,21 @@ export function allStructureIds(structureInfo: ManifestStructureInfo[] | null, i
     allStructureIds(info.items, ids);
   }
   return ids;
+}
+
+export function findManifestStructureInfo(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo | null {
+  for (let info of structureInfo) {
+    if (info.id === id) {
+      return info;
+    }
+    else {
+      let childInfo = findManifestStructureInfo(info.items, id);
+      if (childInfo) {
+        return childInfo;
+      }
+    }
+  }
+  return null;
 }
 
 function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {

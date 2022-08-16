@@ -3,8 +3,9 @@ import { DataNode } from 'antd/lib/tree';
 import React, { useState } from 'react';
 import { ManifestCanvasInfo, ManifestStructureInfo } from '../utils/IIIFUtils';
 import EditableText from './EditableText';
-import { FolderOutlined, FolderOpenOutlined, FileImageOutlined } from '@ant-design/icons';
 import { Key } from 'antd/lib/table/interface';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolder, faFolderOpen, faImage } from '@fortawesome/free-solid-svg-icons';
 
 class TreeStructureProps {
   structureInfo!: ManifestStructureInfo[];
@@ -35,24 +36,28 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     onChangeStructureInfo(newStructureInfo);
   };
 
-  const recursiveGetIds = (structureInfo: ManifestStructureInfo[], id1: string, id2: string, selecting = false, selectedIds: string[] = []): { ids: string[], selecting: boolean } => {
+  const recursiveGetIds = (structureInfo: ManifestStructureInfo[], id1: string, id2: string, selecting = false, selectedIds: string[] = [], keyAugmentation = ""): { ids: string[], selecting: boolean } => {
+    let index = 1;
     for (let structure of structureInfo) {
-      if (structure.id === id1 || structure.id === id2) {
+      let key = structure.id;
+      if (structure.type === "Canvas") key = key + keyAugmentation + "|" + index;
+      if (key === id1 || key === id2) {
         if (!selecting) {
           selecting = true;
-          selectedIds.push(structure.id);
-          selecting = recursiveGetIds(structure.items, id1, id2, selecting, selectedIds).selecting;
+          selectedIds.push(key);
+          selecting = recursiveGetIds(structure.items, id1, id2, selecting, selectedIds, keyAugmentation + "|" + index).selecting;
         } else {
           selecting = false;
-          selectedIds.push(structure.id);
+          selectedIds.push(key);
           return { ids: selectedIds, selecting: false };
         }
       } else {
         if (selecting) {
-          selectedIds.push(structure.id);
+          selectedIds.push(key);
         }
-        selecting = recursiveGetIds(structure.items, id1, id2, selecting, selectedIds).selecting;
+        selecting = recursiveGetIds(structure.items, id1, id2, selecting, selectedIds, keyAugmentation + "|" + index).selecting;
       }
+      index += 1;
     }
     return { ids: selectedIds, selecting };
   }
@@ -106,7 +111,8 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     return null;
   }
 
-  const mapStructureToDataNodes = (structureInfo: ManifestStructureInfo[]): DataNode[] => {
+  const mapStructureToDataNodes = (structureInfo: ManifestStructureInfo[], keyAugmentation = ""): DataNode[] => {
+    let index = 1;
     return structureInfo.map((info) => {
       let imageThumb = null;
       let key = info.id;
@@ -118,10 +124,12 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
         if (imageIconSrc) {
           imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" />
         }
+        key = key + keyAugmentation + "|" + index;
       }
-      let icon: any = info.type === "Canvas" ? (imageThumb || <FileImageOutlined />) : ((expandedIds.includes(key) && info.items.length > 0) ? <FolderOpenOutlined /> : <FolderOutlined />)
+      let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} /> ) : ((expandedIds.includes(key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)
       title = <span><span onClick={(e) => { handleNodeClicked(e, key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, key, false) }}>{title}</span></span>
-      let children = info.items && mapStructureToDataNodes(info.items);
+      let children = info.items && mapStructureToDataNodes(info.items, keyAugmentation + "|" + index);
+      index += 1;
       return {
         key, title, children
       }

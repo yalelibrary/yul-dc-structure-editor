@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas, findManifestStructureInfo } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -122,9 +122,18 @@ function App() {
     setSelectedStructureIds(ids);
   }
 
+  const isRangeSelected = (): boolean => {
+    if (selectedStructureIds.length !== 1) {
+      return false;
+    } else {
+      let selectedItem = findManifestStructureInfo(structureInfo, selectedStructureIds[0]);
+      return (selectedItem && selectedItem.type === "Range") || false;
+    }
+  }
+
   return (
     <Layout className="main-container">
-      <TopHeader onOpenModal={handleOpenModal} onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length <= 1} onAddCanvas={handleOnAddCanvas} addCanvasEnabled={selectedCanvasIds.length >= 1 && selectedStructureIds.length <=1}/>
+      <TopHeader onOpenModal={handleOpenModal} onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length === 0 || isRangeSelected()} onAddCanvas={handleOnAddCanvas} addCanvasEnabled={isRangeSelected()}/>
       <Layout>
         <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
         <Sider className="sider">
