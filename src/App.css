@@ -6,6 +6,8 @@
 
 .sider {
   background-color: white;
+  min-width: 25vw !important;
+  flex-basis: 25vw !important;
 }
 
 .image-list, .tree-view, .simple-list {

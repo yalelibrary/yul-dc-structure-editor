@@ -1,25 +1,35 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Modal } from 'antd';
 import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
-import {v4 as uuidv4} from 'uuid';
 const { Sider, Content } = Layout;
 
 
 function App() {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [loadedManifest, setLoadedManifest ] = useState<{[key: string]: any} | null>(null);
+  const [loadedManifest, setLoadedManifest] = useState<{ [key: string]: any } | null>(null);
   const [canvasInfo, setCanvasInfo] = useState<ManifestCanvasInfo[]>([]);
   const [structureInfo, setStructureInfo] = useState<ManifestStructureInfo[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = useState<string[]>([]);
   const [selectStart, setSelectStart] = useState<string | null>(null);
   const [selectedStructureIds, setSelectedStructureIds] = useState<string[]>([]);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    let canvasInfo = canvasInfoFromManifest(loadedManifest);
+    canvasInfo && setCanvasInfo(canvasInfo);
+    setSelectStart(null);
+    setSelectedCanvasIds([]);
+    let structureInfo = structureInfoFromManifest(loadedManifest);
+    setStructureInfo(structureInfo || []);
+    setExpandedIds(allStructureIds(structureInfo))
+  }, [loadedManifest])
 
   const showError = (title: string, content: string) => {
     Modal.error({
@@ -85,32 +95,6 @@ function App() {
     setSelectedCanvasIds(newSelections);
   }
 
-  const createNewRange = (): ManifestStructureInfo => {
-    return {
-      label: "New Range",
-      type: "Range",
-      id: uuidv4(),
-      newItem: true, 
-      items: []
-    }
-  }
-
-  const addNewRange = (structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo[] => {
-    return structureInfo.map((structure) => {
-      if (structure.id === id) {        
-        if (structure.type === "Range") {
-          let newItems = [...structure.items];
-          newItems.push(createNewRange())
-          return {...structure, items: newItems}
-        } else {
-          return structure;
-        }
-      } else {
-        return {...structure, items: addNewRange(structure.items, id)}
-      }
-    })
-  }
-
   const handleChangeStructureInfo = (structureInfo: ManifestStructureInfo[]) => {
     setStructureInfo(structureInfo);
   }
@@ -119,6 +103,9 @@ function App() {
     if (selectedStructureIds.length === 1) {
       let newStructureInfo = addNewRange(structureInfo, selectedStructureIds[0]);
       setStructureInfo(newStructureInfo);
+      if (!expandedIds.includes(selectedStructureIds[0])) {
+        setExpandedIds([...expandedIds, selectedStructureIds[0]]);
+      }
     } else if (selectedStructureIds.length === 0) {
       let newStructureInfo: ManifestStructureInfo[] = [...structureInfo, createNewRange()];
       setStructureInfo(newStructureInfo);
@@ -129,30 +116,24 @@ function App() {
     setSelectedStructureIds(ids);
   }
 
-  useEffect(() => {
-    let canvasInfo = canvasInfoFromManifest(loadedManifest);
-    canvasInfo && setCanvasInfo(canvasInfo);
-    setSelectStart(null);
-    setSelectedCanvasIds([]);
-    let structureInfo = structureInfoFromManifest(loadedManifest);
-    setStructureInfo(structureInfo || []);
-  }, [loadedManifest])
-
   return (
     <Layout className="main-container">
-      <TopHeader onOpenModal={handleOpenModal} onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length <= 1}/>
+      <TopHeader onOpenModal={handleOpenModal} onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length <= 1} />
       <Layout>
-        <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest}/>
+        <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
         <Sider className="sider">
           <TreeStructure
-                selectedIds={selectedStructureIds}
-                structureInfo={structureInfo}
-                onChangeStructureInfo={handleChangeStructureInfo}
-                onChangeSelectedIds={handleOnSelectedIdsChange}
-            />
+            selectedIds={selectedStructureIds}
+            structureInfo={structureInfo}
+            expandedIds={expandedIds}
+            canvasInfo={canvasInfo}
+            onChangeStructureInfo={handleChangeStructureInfo}
+            onChangeSelectedIds={handleOnSelectedIdsChange}
+            onChangeExpandedIds={setExpandedIds}
+          />
         </Sider>
         <Content>
-          <ImageCanvas canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} onCanvasClick={handleCanvasClicked}/>
+          <ImageCanvas canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} onCanvasClick={handleCanvasClicked} />
         </Content>
       </Layout>
     </Layout>
