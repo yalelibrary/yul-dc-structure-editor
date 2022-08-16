@@ -9,9 +9,11 @@ function EditableText({ onSave, defaultValue }: EditableTextProps) {
 
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(defaultValue);
-
   if (editing) {
-    return <input className='edit-text' value={value} 
+    return <input
+      className='edit-text'
+      value={value}
+      autoFocus
       onChange={(e) => setValue(e.target.value)}  // using input instead of antd Input since onBlur doesn't work on Input.
       onBlur={() => {
         console.log("ONBLUR");

@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export function extractIIIFLabel(obj: any, defaultValue: string = ""): string {
   if (!obj || !obj["label"]) {
     return defaultValue
@@ -44,7 +46,7 @@ export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] 
       }
       let imageId = body["id"];
       let imageIdComponents = imageId.split("/");
-      imageIdComponents[imageIdComponents.length - 3] = "!200,200";      
+      imageIdComponents[imageIdComponents.length - 3] = "!200,200";
       let thumbnail = imageIdComponents.join("/");
       let oid = id.split("/").pop();
       let label = extractIIIFLabel(item, "");
@@ -84,6 +86,42 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
   return structures;
 }
 
+export function createNewRange(): ManifestStructureInfo {
+  return {
+    label: "New Range",
+    type: "Range",
+    id: uuidv4(),
+    newItem: true,
+    items: []
+  };
+}
+
+export function addNewRange(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo[] {
+  return structureInfo.map((structure) => {
+    if (structure.id === id) {
+      if (structure.type === "Range") {
+        let newItems = [...structure.items];
+        newItems.push(createNewRange());
+        return { ...structure, items: newItems };
+      } else {
+        return structure;
+      }
+    } else {
+      return { ...structure, items: addNewRange(structure.items, id) };
+    }
+  });
+}
+
+export function allStructureIds(structureInfo: ManifestStructureInfo[] | null, ids: string[] = []) {
+  if (!structureInfo)
+    return [];
+  for (let info of structureInfo) {
+    ids.push(info.id);
+    allStructureIds(info.items, ids);
+  }
+  return ids;
+}
+
 function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
@@ -98,7 +136,7 @@ function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): Manif
   if (!label && type === "Canvas") {
     label = itemIdToLabelMap[id] || "";
     let idParts = id.split("/");
-    label += ": (" + idParts[idParts.length -1] + ")";
+    label += ": (" + idParts[idParts.length - 1] + ")";
   }
-  return {label, id, type, newItem, items};
+  return { label, id, type, newItem, items };
 }

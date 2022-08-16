@@ -26,7 +26,7 @@ function LaunchModal({ isModalVisible, setIsModalVisible, setApiKeyAndManifest }
             <Modal title="Enter the API Key and URL the for Manifest" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
                 <Input placeholder="API Key" value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
                 <Divider />
-                <Input placeholder="Manifest" value={manifestUrl} onChange={(e) => setManifestUrl(e.target.value)} />
+                <Input placeholder="Manifest" value={manifestUrl} onChange={(e) => setManifestUrl(e.target.value)} onDoubleClick={()=>setManifestUrl('https://iiif.io/api/cookbook/recipe/0024-book-4-toc/manifest.json')}/>
             </Modal>
         </>
     );
