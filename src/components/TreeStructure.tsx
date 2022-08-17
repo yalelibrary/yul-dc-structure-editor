@@ -137,7 +137,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
   }
 
 
-  const loop = (
+  const findStructureByDataNodeKey = (
     data: ManifestStructureInfo[],
     id: string,
     callback: (node: ManifestStructureInfo, i: number, data: ManifestStructureInfo[]) => void,
@@ -149,7 +149,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
         return callback(data[i], i, data);
       }
       if (data[i].items) {
-        loop(data[i].items!, id, callback, canvasPath + "-" + i);
+        findStructureByDataNodeKey(data[i].items!, id, callback, canvasPath + "-" + i);
       }
     }
   };
@@ -157,7 +157,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
   const allowDrop: TreeProps['allowDrop'] = ({ dropNode, dropPosition }) => {
     let allow = true;
     if (dropPosition == 0) {
-      loop(structureInfo, dropNode.key as string, (node, i, data)=>{
+      findStructureByDataNodeKey(structureInfo, dropNode.key as string, (node, i, data)=>{
         if (node.type === "Canvas") {
           allow = false;
         }
@@ -176,14 +176,14 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
 
     // Find dragObject
     let dragObj: ManifestStructureInfo;
-    loop(data, dragKey, (item, index, arr) => {
+    findStructureByDataNodeKey(data, dragKey, (item, index, arr) => {
       arr.splice(index, 1);
       dragObj = item;
     });
 
     if (!info.dropToGap) {
       // Drop on the content
-      loop(data, dropKey, item => {
+      findStructureByDataNodeKey(data, dropKey, item => {
         item.items = item.items || [];
         // where to insert 示例添加到头部，可以是随意位置
         item.items.unshift(dragObj);
@@ -193,7 +193,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
       (info.node as any).props.expanded && // Is expanded
       dropPosition === 1 // On the bottom gap
     ) {
-      loop(data, dropKey, item => {
+      findStructureByDataNodeKey(data, dropKey, item => {
         item.items = item.items || [];
         // where to insert 示例添加到头部，可以是随意位置
         item.items.unshift(dragObj);
@@ -203,7 +203,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     } else {
       let ar: ManifestStructureInfo[] = [];
       let i: number;
-      loop(data, dropKey, (_item, index, arr) => {
+      findStructureByDataNodeKey(data, dropKey, (_item, index, arr) => {
         ar = arr;
         i = index;
       });
