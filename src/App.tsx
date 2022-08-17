@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas, findManifestStructureInfo } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas, findManifestStructureInfo, deleteItemsById } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -91,7 +91,6 @@ function App() {
         newSelections = [canvasId];
       }
     }
-    console.log(newSelections + " " + selectStart);
     setSelectedCanvasIds(newSelections);
   }
 
@@ -122,6 +121,10 @@ function App() {
     setSelectedStructureIds(ids);
   }
 
+  const handleDelete = () => {
+    setStructureInfo(deleteItemsById(structureInfo, selectedStructureIds));
+  }
+
   const isRangeSelected = (): boolean => {
     if (selectedStructureIds.length !== 1) {
       return false;
@@ -133,7 +136,10 @@ function App() {
 
   return (
     <Layout className="main-container">
-      <TopHeader onOpenModal={handleOpenModal} onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length === 0 || isRangeSelected()} onAddCanvas={handleOnAddCanvas} addCanvasEnabled={isRangeSelected()}/>
+      <TopHeader onOpenModal={handleOpenModal}
+        onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length === 0 || isRangeSelected()}
+        onAddCanvas={handleOnAddCanvas} addCanvasEnabled={isRangeSelected() && selectedCanvasIds.length > 0}
+        deleteEnabled={selectedStructureIds.length > 0} onDelete={handleDelete} />
       <Layout>
         <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
         <Sider className="sider">
