@@ -125,6 +125,8 @@ function App() {
 
   const handleDelete = () => {
     setStructureInfo(deleteItemsById(structureInfo, selectedStructureIds));
+    setExpandedIds(expandedIds.filter((id)=>!selectedStructureIds.includes(id)));
+    setSelectedStructureIds([]);
   }
 
   const isRangeSelected = (): boolean => {
