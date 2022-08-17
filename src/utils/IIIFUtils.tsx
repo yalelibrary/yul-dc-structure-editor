@@ -131,7 +131,7 @@ export function deleteItemsById(structureInfo: ManifestStructureInfo[], ids: str
   let index = 1;
   let initial: ManifestStructureInfo[] = [];
   return structureInfo.reduce((array, structure) => {
-    let structureId = structure.id + (structure.type == 'Canvas' ? keyAugmentation + "|" + index : "");
+    let structureId = structure.id + (structure.type === 'Canvas' ? keyAugmentation + "|" + index : "");
     if (!ids.includes(structureId)) {
       array.push({ ...structure, items: deleteItemsById(structure.items, ids, keyAugmentation + "|" + index) });
     }
