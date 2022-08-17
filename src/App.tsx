@@ -107,7 +107,9 @@ function App() {
       }
     } else if (selectedStructureIds.length === 0) {
       let newStructureInfo: ManifestStructureInfo[] = [...structureInfo, createNewRange()];
-      setStructureInfo(newStructureInfo);
+      setStructureInfo(newStructureInfo); 
+    } else if (structureInfo.length === 0) {
+      setStructureInfo([createNewRange()]);
     }
   }
 
@@ -137,7 +139,7 @@ function App() {
   return (
     <Layout className="main-container">
       <TopHeader onOpenModal={handleOpenModal}
-        onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length === 0 || isRangeSelected()}
+        onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length === 0 || isRangeSelected() || structureInfo.length === 0}
         onAddCanvas={handleOnAddCanvas} addCanvasEnabled={isRangeSelected() && selectedCanvasIds.length > 0}
         deleteEnabled={selectedStructureIds.length > 0} onDelete={handleDelete} />
       <Layout>
