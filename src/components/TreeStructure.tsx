@@ -36,7 +36,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     onChangeStructureInfo(newStructureInfo);
   };
 
-  const recursiveGetIds = (structureInfo: ManifestStructureInfo[], id1: string, id2: string, selecting = false, selectedIds: string[] = [], canvasPath = ""): { ids: string[], selecting: boolean } => {
+  const findIdsBetweenIdsInclusive = (structureInfo: ManifestStructureInfo[], id1: string, id2: string, selecting = false, selectedIds: string[] = [], canvasPath = ""): { ids: string[], selecting: boolean } => {
     let index = 0;
     for (let structure of structureInfo) {
       let key = structure.id;
@@ -45,7 +45,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
         if (!selecting) {
           selecting = true;
           selectedIds.push(key);
-          selecting = recursiveGetIds(structure.items, id1, id2, selecting, selectedIds, canvasPath + "-" + index).selecting;
+          selecting = findIdsBetweenIdsInclusive(structure.items, id1, id2, selecting, selectedIds, canvasPath + "-" + index).selecting;
         } else {
           selecting = false;
           selectedIds.push(key);
@@ -55,7 +55,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
         if (selecting) {
           selectedIds.push(key);
         }
-        selecting = recursiveGetIds(structure.items, id1, id2, selecting, selectedIds, canvasPath + "-" + index).selecting;
+        selecting = findIdsBetweenIdsInclusive(structure.items, id1, id2, selecting, selectedIds, canvasPath + "-" + index).selecting;
       }
       index += 1;
     }
@@ -80,7 +80,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
       if (id === selectionStart) {
         // do nothing
       } else if (selectionStart) {
-        let newSelectedIds = [...selectedIds, ...recursiveGetIds(structureInfo, selectionStart, id).ids.filter((value) => !selectedIds.includes(value))];
+        let newSelectedIds = [...selectedIds, ...findIdsBetweenIdsInclusive(structureInfo, selectionStart, id).ids.filter((value) => !selectedIds.includes(value))];
         onChangeSelectedIds(newSelectedIds);
         setSelectionStart(id);
       } else {
@@ -135,7 +135,6 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
       }
     })
   }
-
 
   const findStructureByDataNodeKey = (
     data: ManifestStructureInfo[],
