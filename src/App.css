@@ -2,12 +2,14 @@
 
 .main-container {
   height: 100vh;
+  overflow: auto;
 }
 
 .sider {
   background-color: white;
   min-width: 25vw !important;
   flex-basis: 25vw !important;
+  overflow-y: auto;
 }
 
 .image-list, .tree-view, .simple-list {
