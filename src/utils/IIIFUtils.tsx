@@ -21,7 +21,6 @@ export type ManifestCanvasInfo = {
   index: number;
 }
 
-
 export type StructureInfoType = "Range" | "Canvas";
 
 export type ManifestStructureInfo = {
@@ -97,9 +96,6 @@ export function createNewRange(): ManifestStructureInfo {
 }
 
 export function addNewRange(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo[] {
-  if (structureInfo.length < 1) {
-    return [createNewRange()]
-  }
   return structureInfo.map((structure) => {
     if (structure.id === id) {
       if (structure.type === "Range") {
@@ -120,7 +116,7 @@ export function addNewCanvas(structureInfo: ManifestStructureInfo[], id: string,
     if (structure.id === id) {
       if (structure.type === "Range") {
         let newItems = [...structure.items];
-        canvasInfoSet.forEach((c) => newItems.push({id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true}));
+        canvasInfoSet.forEach((c) => newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true }));
         return { ...structure, items: newItems };
       } else {
         return structure;
@@ -131,6 +127,19 @@ export function addNewCanvas(structureInfo: ManifestStructureInfo[], id: string,
   });
 }
 
+export function deleteItemsById(structureInfo: ManifestStructureInfo[], ids: string[], canvasPath = ""): ManifestStructureInfo[] {
+  let index = 0;
+  let initial: ManifestStructureInfo[] = [];
+  return structureInfo.reduce((array, structure) => {
+    let structureId = structure.id + (structure.type === 'Canvas' ? canvasPath + "-" + index : "");
+    if (!ids.includes(structureId)) {
+      array.push({ ...structure, items: deleteItemsById(structure.items, ids, canvasPath + "-" + index) });
+    }
+    index += 1;
+    return array;
+  }, initial);
+}
+
 export function allStructureIds(structureInfo: ManifestStructureInfo[] | null, ids: string[] = []) {
   if (!structureInfo)
     return [];
@@ -139,6 +148,21 @@ export function allStructureIds(structureInfo: ManifestStructureInfo[] | null, i
     allStructureIds(info.items, ids);
   }
   return ids;
+}
+
+export function findManifestStructureInfo(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo | null {
+  for (let info of structureInfo) {
+    if (info.id === id) {
+      return info;
+    }
+    else {
+      let childInfo = findManifestStructureInfo(info.items, id);
+      if (childInfo) {
+        return childInfo;
+      }
+    }
+  }
+  return null;
 }
 
 function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {

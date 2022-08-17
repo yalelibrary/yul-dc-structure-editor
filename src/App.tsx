@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas, findManifestStructureInfo, deleteItemsById } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -91,7 +91,6 @@ function App() {
         newSelections = [canvasId];
       }
     }
-    console.log(newSelections + " " + selectStart);
     setSelectedCanvasIds(newSelections);
   }
 
@@ -108,7 +107,9 @@ function App() {
       }
     } else if (selectedStructureIds.length === 0) {
       let newStructureInfo: ManifestStructureInfo[] = [...structureInfo, createNewRange()];
-      setStructureInfo(newStructureInfo);
+      setStructureInfo(newStructureInfo); 
+    } else if (structureInfo.length === 0) {
+      setStructureInfo([createNewRange()]);
     }
   }
 
@@ -122,9 +123,27 @@ function App() {
     setSelectedStructureIds(ids);
   }
 
+  const handleDelete = () => {
+    setStructureInfo(deleteItemsById(structureInfo, selectedStructureIds));
+    setExpandedIds(expandedIds.filter((id)=>!selectedStructureIds.includes(id)));
+    setSelectedStructureIds([]);
+  }
+
+  const isRangeSelected = (): boolean => {
+    if (selectedStructureIds.length !== 1) {
+      return false;
+    } else {
+      let selectedItem = findManifestStructureInfo(structureInfo, selectedStructureIds[0]);
+      return (selectedItem && selectedItem.type === "Range") || false;
+    }
+  }
+
   return (
     <Layout className="main-container">
-      <TopHeader onOpenModal={handleOpenModal} onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length <= 1} onAddCanvas={handleOnAddCanvas} addCanvasEnabled={selectedCanvasIds.length >= 1 && selectedStructureIds.length <=1}/>
+      <TopHeader onOpenModal={handleOpenModal}
+        onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length === 0 || isRangeSelected() || structureInfo.length === 0}
+        onAddCanvas={handleOnAddCanvas} addCanvasEnabled={isRangeSelected() && selectedCanvasIds.length > 0}
+        deleteEnabled={selectedStructureIds.length > 0} onDelete={handleDelete} />
       <Layout>
         <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
         <Sider className="sider">
