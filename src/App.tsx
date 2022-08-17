@@ -29,6 +29,7 @@ function App() {
     let structureInfo = structureInfoFromManifest(loadedManifest);
     setStructureInfo(structureInfo || []);
     setExpandedIds(allStructureIds(structureInfo))
+    setSelectedStructureIds([]);
   }, [loadedManifest])
 
   const showError = (title: string, content: string) => {
