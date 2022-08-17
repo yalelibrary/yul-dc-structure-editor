@@ -21,7 +21,7 @@ export type ManifestCanvasInfo = {
   index: number;
 }
 
-export type StructureInfoType = "Range" | "Canvas";
+export type StructureInfoType = "Range" | "Canvas" | "Removing";
 
 export type ManifestStructureInfo = {
   type: StructureInfoType;

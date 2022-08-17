@@ -1,7 +1,7 @@
 import { Tree } from 'antd';
 import { DataNode, TreeProps } from 'antd/lib/tree';
 import React, { useState } from 'react';
-import { ManifestCanvasInfo, ManifestStructureInfo, findStructureByDataNodeKey } from '../utils/IIIFUtils';
+import { ManifestCanvasInfo, ManifestStructureInfo, findStructureByDataNodeKey, deleteItemsById } from '../utils/IIIFUtils';
 import EditableText from './EditableText';
 import { Key } from 'antd/lib/table/interface';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -155,11 +155,15 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
 
     const data = [...structureInfo];
+    //return;
+
 
     // Find dragObject
     let dragObj: ManifestStructureInfo;
-    findStructureByDataNodeKey(data, dragKey, (item, index, arr) => {
-      arr.splice(index, 1);
+
+    // hack to keep indexes in canvas paths the same until move is complete
+    findStructureByDataNodeKey(data, dragKey, (item, index, arr) => {      
+      arr[index] = {...item, id: "DROP REMOVE", type: "Removing"};
       dragObj = item;
     });
 
@@ -195,7 +199,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
         ar.splice(i! + 1, 0, dragObj!);
       }
     }
-    onChangeStructureInfo(data);
+    onChangeStructureInfo(deleteItemsById(data, ["DROP REMOVE"]));
   };
 
 
