@@ -21,7 +21,7 @@ export type ManifestCanvasInfo = {
   index: number;
 }
 
-export type StructureInfoType = "Range" | "Canvas";
+export type StructureInfoType = "Range" | "Canvas" | "Removing";
 
 export type ManifestStructureInfo = {
   type: StructureInfoType;
@@ -96,35 +96,24 @@ export function createNewRange(): ManifestStructureInfo {
 }
 
 export function addNewRange(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo[] {
-  return structureInfo.map((structure) => {
-    if (structure.id === id) {
-      if (structure.type === "Range") {
-        let newItems = [...structure.items];
-        newItems.push(createNewRange());
-        return { ...structure, items: newItems };
-      } else {
-        return structure;
-      }
-    } else {
-      return { ...structure, items: addNewRange(structure.items, id) };
+  findStructureByDataNodeKey(structureInfo, id, (node, i, data) => {
+    if (node.type === "Range") {
+      let newItems = [...node.items, createNewRange()];
+      node.items = newItems;
     }
   });
+  return [...structureInfo];
 }
 
-export function addNewCanvas(structureInfo: ManifestStructureInfo[], id: string, canvasInfoSet: ManifestCanvasInfo[]): ManifestStructureInfo[] {
-  return structureInfo.map((structure) => {
-    if (structure.id === id) {
-      if (structure.type === "Range") {
-        let newItems = [...structure.items];
-        canvasInfoSet.forEach((c) => newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true }));
-        return { ...structure, items: newItems };
-      } else {
-        return structure;
-      }
-    } else {
-      return { ...structure, items: addNewCanvas(structure.items, id, canvasInfoSet) };
+export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: string, canvasInfoSet: ManifestCanvasInfo[]): ManifestStructureInfo[] {
+  findStructureByDataNodeKey(structureInfo, id, (node, i, data) => {
+    if (node.type === "Range") {
+      let newItems = [...node.items];
+      canvasInfoSet.forEach((c) => newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true }));
+      node.items = newItems;
     }
   });
+  return [...structureInfo];
 }
 
 export function deleteItemsById(structureInfo: ManifestStructureInfo[], ids: string[], canvasPath = ""): ManifestStructureInfo[] {
@@ -150,19 +139,19 @@ export function allStructureIds(structureInfo: ManifestStructureInfo[] | null, i
   return ids;
 }
 
-export function findManifestStructureInfo(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo | null {
-  for (let info of structureInfo) {
-    if (info.id === id) {
-      return info;
+export function findStructureByDataNodeKey(data: ManifestStructureInfo[],
+  id: string,
+  callback: (node: ManifestStructureInfo, i: number, data: ManifestStructureInfo[]) => void,
+  canvasPath = "") {
+  for (let i = 0; i < data.length; i++) {
+    let key = data[i].id + (data[i].type === "Canvas" ? canvasPath + "-" + i : "");
+    if (key === id) {
+      return callback(data[i], i, data);
     }
-    else {
-      let childInfo = findManifestStructureInfo(info.items, id);
-      if (childInfo) {
-        return childInfo;
-      }
+    if (data[i].items) {
+      findStructureByDataNodeKey(data[i].items!, id, callback, canvasPath + "-" + i);
     }
   }
-  return null;
 }
 
 function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
