@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas, findManifestStructureInfo, deleteItemsById } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas, findStructureByDataNodeKey, deleteItemsById } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -133,8 +133,11 @@ function App() {
     if (selectedStructureIds.length !== 1) {
       return false;
     } else {
-      let selectedItem = findManifestStructureInfo(structureInfo, selectedStructureIds[0]);
-      return (selectedItem && selectedItem.type === "Range") || false;
+      let nodeIsRange = false;
+      findStructureByDataNodeKey(structureInfo, selectedStructureIds[0], (node, i, data)=>{
+        nodeIsRange = node.type === "Range";
+      });
+      return nodeIsRange;
     }
   }
 

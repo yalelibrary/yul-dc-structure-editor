@@ -150,19 +150,19 @@ export function allStructureIds(structureInfo: ManifestStructureInfo[] | null, i
   return ids;
 }
 
-export function findManifestStructureInfo(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo | null {
-  for (let info of structureInfo) {
-    if (info.id === id) {
-      return info;
+export function findStructureByDataNodeKey(data: ManifestStructureInfo[],
+  id: string,
+  callback: (node: ManifestStructureInfo, i: number, data: ManifestStructureInfo[]) => void,
+  canvasPath = "") {
+  for (let i = 0; i < data.length; i++) {
+    let key = data[i].id + (data[i].type === "Canvas" ? canvasPath + "-" + i : "");
+    if (key === id) {
+      return callback(data[i], i, data);
     }
-    else {
-      let childInfo = findManifestStructureInfo(info.items, id);
-      if (childInfo) {
-        return childInfo;
-      }
+    if (data[i].items) {
+      findStructureByDataNodeKey(data[i].items!, id, callback, canvasPath + "-" + i);
     }
   }
-  return null;
 }
 
 function recursiveExtractStructure(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {

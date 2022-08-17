@@ -1,7 +1,7 @@
 import { Tree } from 'antd';
 import { DataNode, TreeProps } from 'antd/lib/tree';
 import React, { useState } from 'react';
-import { ManifestCanvasInfo, ManifestStructureInfo } from '../utils/IIIFUtils';
+import { ManifestCanvasInfo, ManifestStructureInfo, findStructureByDataNodeKey } from '../utils/IIIFUtils';
 import EditableText from './EditableText';
 import { Key } from 'antd/lib/table/interface';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -136,26 +136,9 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     })
   }
 
-  const findStructureByDataNodeKey = (
-    data: ManifestStructureInfo[],
-    id: string,
-    callback: (node: ManifestStructureInfo, i: number, data: ManifestStructureInfo[]) => void,
-    canvasPath = ""
-  ) => {
-    for (let i = 0; i < data.length; i++) {
-      let key = data[i].id + (data[i].type === "Canvas" ? canvasPath + "-" + i : "");
-      if (key === id) {
-        return callback(data[i], i, data);
-      }
-      if (data[i].items) {
-        findStructureByDataNodeKey(data[i].items!, id, callback, canvasPath + "-" + i);
-      }
-    }
-  };
-
   const allowDrop: TreeProps['allowDrop'] = ({ dropNode, dropPosition }) => {
     let allow = true;
-    if (dropPosition == 0) {
+    if (dropPosition === 0) {
       findStructureByDataNodeKey(structureInfo, dropNode.key as string, (node, i, data)=>{
         if (node.type === "Canvas") {
           allow = false;
