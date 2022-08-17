@@ -16,7 +16,6 @@ function EditableText({ onSave, defaultValue }: EditableTextProps) {
       autoFocus
       onChange={(e) => setValue(e.target.value)}  // using input instead of antd Input since onBlur doesn't work on Input.
       onBlur={() => {
-        console.log("ONBLUR");
         setEditing(false);
         onSave(value);
       }} onKeyDown={(e) => {
