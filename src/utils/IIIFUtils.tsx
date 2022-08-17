@@ -96,35 +96,24 @@ export function createNewRange(): ManifestStructureInfo {
 }
 
 export function addNewRange(structureInfo: ManifestStructureInfo[], id: string): ManifestStructureInfo[] {
-  return structureInfo.map((structure) => {
-    if (structure.id === id) {
-      if (structure.type === "Range") {
-        let newItems = [...structure.items];
-        newItems.push(createNewRange());
-        return { ...structure, items: newItems };
-      } else {
-        return structure;
-      }
-    } else {
-      return { ...structure, items: addNewRange(structure.items, id) };
+  findStructureByDataNodeKey(structureInfo, id, (node, i, data) => {
+    if (node.type === "Range") {
+      let newItems = [...node.items, createNewRange()];
+      node.items = newItems;
     }
   });
+  return [...structureInfo];
 }
 
-export function addNewCanvas(structureInfo: ManifestStructureInfo[], id: string, canvasInfoSet: ManifestCanvasInfo[]): ManifestStructureInfo[] {
-  return structureInfo.map((structure) => {
-    if (structure.id === id) {
-      if (structure.type === "Range") {
-        let newItems = [...structure.items];
-        canvasInfoSet.forEach((c) => newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true }));
-        return { ...structure, items: newItems };
-      } else {
-        return structure;
-      }
-    } else {
-      return { ...structure, items: addNewCanvas(structure.items, id, canvasInfoSet) };
+export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: string, canvasInfoSet: ManifestCanvasInfo[]): ManifestStructureInfo[] {
+  findStructureByDataNodeKey(structureInfo, id, (node, i, data) => {
+    if (node.type === "Range") {
+      let newItems = [...node.items];
+      canvasInfoSet.forEach((c) => newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true }));
+      node.items = newItems;
     }
   });
+  return [...structureInfo];
 }
 
 export function deleteItemsById(structureInfo: ManifestStructureInfo[], ids: string[], canvasPath = ""): ManifestStructureInfo[] {

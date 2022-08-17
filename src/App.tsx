@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addNewCanvas, findStructureByDataNodeKey, deleteItemsById } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addCavasesToRange, findStructureByDataNodeKey, deleteItemsById } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -115,7 +115,7 @@ function App() {
 
   const handleOnAddCanvas = () => {
     let canvasInfoSet = canvasInfo.filter((o) => selectedCanvasIds.includes(o.canvasId));
-    let newStructureInfo = addNewCanvas(structureInfo, selectedStructureIds[0], canvasInfoSet);
+    let newStructureInfo = addCavasesToRange(structureInfo, selectedStructureIds[0], canvasInfoSet);
     setStructureInfo(newStructureInfo);
   }
 
