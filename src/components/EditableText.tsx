@@ -10,7 +10,7 @@ function EditableText({ onSave, defaultValue }: EditableTextProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(defaultValue);
 
-  useLayoutEffect(()=>{
+  useLayoutEffect(() => {
     if (editing && inputEl.current) {
       inputEl.current.select();
     }

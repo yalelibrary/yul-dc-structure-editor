@@ -121,7 +121,7 @@ function App() {
 
   const handleDelete = () => {
     setStructureInfo(deleteItemsByKey(structureInfo, selectedStructureKeys));
-    setExpandedKeys(expandedKeys.filter((keys)=>!selectedStructureKeys.includes(keys)));
+    setExpandedKeys(expandedKeys.filter((keys) => !selectedStructureKeys.includes(keys)));
     setSelectedStructureKeys([]);
   }
 
@@ -130,7 +130,7 @@ function App() {
       return false;
     } else {
       let selectedIsRange = false;
-      findStructureByKey(structureInfo, selectedStructureKeys[0], (structure)=>{
+      findStructureByKey(structureInfo, selectedStructureKeys[0], (structure) => {
         selectedIsRange = structure.type === "Range";
       });
       return selectedIsRange;

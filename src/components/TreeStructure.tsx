@@ -117,7 +117,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
           imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" />
         }
       }
-      let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} /> ) : ((expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)
+      let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} />) : ((expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)
       title = <span><span onClick={(e) => { handleNodeClicked(e, info.key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, info.key, false) }}>{title}</span></span>
       let children = info.items && mapStructureToDataNodes(info.items);
       return {
@@ -129,7 +129,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
   const allowDrop: TreeProps['allowDrop'] = ({ dropNode, dropPosition }) => {
     let allow = true;
     if (dropPosition === 0) {
-      findStructureByKey(structureInfo, dropNode.key as string, (structure)=>{
+      findStructureByKey(structureInfo, dropNode.key as string, (structure) => {
         if (structure.type === "Canvas") {
           allow = false;
         }
@@ -152,7 +152,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
     let dragObj: ManifestStructureInfo;
 
     // hack to keep indexes in canvas paths the same until move is complete
-    findStructureByKey(parentItems, dragKey, (item, index, arr) => {    
+    findStructureByKey(parentItems, dragKey, (item, index, arr) => {
       arr.splice(index, 1);
       dragObj = item;
     });
