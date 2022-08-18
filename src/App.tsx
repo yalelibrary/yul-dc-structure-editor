@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureIds, createNewRange, addCavasesToRange, findStructureByDataNodeKey, deleteItemsById } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -12,14 +12,14 @@ const { Sider, Content } = Layout;
 
 function App() {
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isOpenManifestModalVisible, setIsOpenManifestModalVisible] = useState(false);
   const [loadedManifest, setLoadedManifest] = useState<{ [key: string]: any } | null>(null);
   const [canvasInfo, setCanvasInfo] = useState<ManifestCanvasInfo[]>([]);
   const [structureInfo, setStructureInfo] = useState<ManifestStructureInfo[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = useState<string[]>([]);
   const [selectStart, setSelectStart] = useState<string | null>(null);
-  const [selectedStructureIds, setSelectedStructureIds] = useState<string[]>([]);
-  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [selectedStructureKeys, setSelectedStructureKeys] = useState<string[]>([]);
+  const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
 
   useEffect(() => {
     let canvasInfo = canvasInfoFromManifest(loadedManifest);
@@ -28,8 +28,8 @@ function App() {
     setSelectedCanvasIds([]);
     let structureInfo = structureInfoFromManifest(loadedManifest);
     setStructureInfo(structureInfo || []);
-    setExpandedIds(allStructureIds(structureInfo))
-    setSelectedStructureIds([]);
+    setExpandedKeys(allStructureKeys(structureInfo))
+    setSelectedStructureKeys([]);
   }, [loadedManifest])
 
   const showError = (title: string, content: string) => {
@@ -47,7 +47,7 @@ function App() {
   };
 
   const handleOpenModal = () => {
-    setIsModalVisible(true);
+    setIsOpenManifestModalVisible(true);
   }
 
   const setApiKeyAndManifest = (apiKey: string, manifestUrl: string) => {
@@ -95,70 +95,65 @@ function App() {
     setSelectedCanvasIds(newSelections);
   }
 
-  const handleChangeStructureInfo = (structureInfo: ManifestStructureInfo[]) => {
-    setStructureInfo(structureInfo);
+  const expandKey = (key: string) => {
+    if (!expandedKeys.includes(key)) {
+      setExpandedKeys([...expandedKeys, key]);
+    }
   }
 
   const handleOnAddRange = () => {
-    if (selectedStructureIds.length === 1) {
-      let newStructureInfo = addNewRange(structureInfo, selectedStructureIds[0]);
-      setStructureInfo(newStructureInfo);
-      if (!expandedIds.includes(selectedStructureIds[0])) {
-        setExpandedIds([...expandedIds, selectedStructureIds[0]]);
-      }
-    } else if (selectedStructureIds.length === 0) {
-      let newStructureInfo: ManifestStructureInfo[] = [...structureInfo, createNewRange()];
-      setStructureInfo(newStructureInfo); 
+    if (selectedStructureKeys.length === 1) {
+      setStructureInfo(addNewRange(structureInfo, selectedStructureKeys[0]));
+      expandKey(selectedStructureKeys[0]);
+    } else if (selectedStructureKeys.length === 0) {
+      setStructureInfo([...structureInfo, createNewRange()]);
     } else if (structureInfo.length === 0) {
       setStructureInfo([createNewRange()]);
     }
   }
 
-  const handleOnAddCanvas = () => {
+  const handleOnAddCanvases = () => {
     let canvasInfoSet = canvasInfo.filter((o) => selectedCanvasIds.includes(o.canvasId));
-    let newStructureInfo = addCavasesToRange(structureInfo, selectedStructureIds[0], canvasInfoSet);
+    let newStructureInfo = addCavasesToRange(structureInfo, selectedStructureKeys[0], canvasInfoSet);
     setStructureInfo(newStructureInfo);
-  }
-
-  const handleOnSelectedIdsChange = (ids: string[]) => {
-    setSelectedStructureIds(ids);
+    expandKey(selectedStructureKeys[0]);
   }
 
   const handleDelete = () => {
-    setStructureInfo(deleteItemsById(structureInfo, selectedStructureIds));
-    setExpandedIds(expandedIds.filter((id)=>!selectedStructureIds.includes(id)));
-    setSelectedStructureIds([]);
+    setStructureInfo(deleteItemsByKey(structureInfo, selectedStructureKeys));
+    setExpandedKeys(expandedKeys.filter((keys)=>!selectedStructureKeys.includes(keys)));
+    setSelectedStructureKeys([]);
   }
 
-  const isRangeSelected = (): boolean => {
-    if (selectedStructureIds.length !== 1) {
+  const isSingleRangeSelected = (): boolean => {
+    if (selectedStructureKeys.length !== 1) {
       return false;
     } else {
-      let nodeIsRange = false;
-      findStructureByDataNodeKey(structureInfo, selectedStructureIds[0], (node, i, data)=>{
-        nodeIsRange = node.type === "Range";
+      let selectedIsRange = false;
+      findStructureByKey(structureInfo, selectedStructureKeys[0], (structure)=>{
+        selectedIsRange = structure.type === "Range";
       });
-      return nodeIsRange;
+      return selectedIsRange;
     }
   }
 
   return (
     <Layout className="main-container">
       <TopHeader onOpenModal={handleOpenModal}
-        onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureIds.length === 0 || isRangeSelected() || structureInfo.length === 0}
-        onAddCanvas={handleOnAddCanvas} addCanvasEnabled={isRangeSelected() && selectedCanvasIds.length > 0}
-        deleteEnabled={selectedStructureIds.length > 0} onDelete={handleDelete} />
+        onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureKeys.length === 0 || isSingleRangeSelected() || structureInfo.length === 0}
+        onAddCanvas={handleOnAddCanvases} addCanvasEnabled={isSingleRangeSelected() && selectedCanvasIds.length > 0}
+        deleteEnabled={selectedStructureKeys.length > 0} onDelete={handleDelete} />
       <Layout>
-        <LaunchModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
+        <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
         <Sider className="sider">
           <TreeStructure
-            selectedIds={selectedStructureIds}
+            selectedKeys={selectedStructureKeys}
             structureInfo={structureInfo}
-            expandedIds={expandedIds}
+            expandedKeys={expandedKeys}
             canvasInfo={canvasInfo}
-            onChangeStructureInfo={handleChangeStructureInfo}
-            onChangeSelectedIds={handleOnSelectedIdsChange}
-            onChangeExpandedIds={setExpandedIds}
+            onStructureInfoChange={setStructureInfo}
+            onSelectedKeysChange={setSelectedStructureKeys}
+            onExpandedKeysChange={setExpandedKeys}
           />
         </Sider>
         <Content>
