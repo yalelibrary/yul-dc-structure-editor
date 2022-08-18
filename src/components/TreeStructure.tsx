@@ -1,7 +1,7 @@
 import { Tree } from 'antd';
 import { DataNode, TreeProps } from 'antd/lib/tree';
 import React, { useState } from 'react';
-import { ManifestCanvasInfo, ManifestStructureInfo, findStructureByDataNodeKey, deleteItemsById } from '../utils/IIIFUtils';
+import { ManifestCanvasInfo, ManifestStructureInfo, findStructureByKey } from '../utils/IIIFUtils';
 import EditableText from './EditableText';
 import { Key } from 'antd/lib/table/interface';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,91 +10,84 @@ import { faFolder, faFolderOpen, faImage } from '@fortawesome/free-solid-svg-ico
 class TreeStructureProps {
   structureInfo!: ManifestStructureInfo[];
   canvasInfo?: ManifestCanvasInfo[];
-  selectedIds!: string[];
-  expandedIds!: string[];
-  onChangeStructureInfo!: ((structureInfo: ManifestStructureInfo[]) => void);
-  onChangeSelectedIds!: ((ids: string[]) => void);
-  onChangeExpandedIds!: ((ids: string[]) => void);
+  selectedKeys!: string[];
+  expandedKeys!: string[];
+  onStructureInfoChange!: ((structureInfo: ManifestStructureInfo[]) => void);
+  onSelectedKeysChange!: ((keys: string[]) => void);
+  onExpandedKeysChange!: ((keys: string[]) => void);
 }
 
-function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, onChangeSelectedIds, onChangeStructureInfo, onChangeExpandedIds }: TreeStructureProps) {
+function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, onSelectedKeysChange, onStructureInfoChange, onExpandedKeysChange }: TreeStructureProps) {
 
   const [selectionStart, setSelectionStart] = useState<string | null>(null);
 
-  const changeStructureLabel = (structures: ManifestStructureInfo[], id: string, value: string): ManifestStructureInfo[] => {
-    return structures.map((structure) => {
-      if (structure.id === id) {
-        return { ...structure, label: value }
-      } else {
-        return { ...structure, items: changeStructureLabel(structure.items, id, value) }
-      }
-    })
+  const changeStructureLabel = (key: string, value: string): ManifestStructureInfo[] => {
+    findStructureByKey(structureInfo, key, (structure) => {
+      structure.label = value;
+    });
+    return [...structureInfo]
   }
 
-  const handleOnSave = (value: string, id: string) => {
-    let newStructureInfo = changeStructureLabel(structureInfo, id, value);
-    onChangeStructureInfo(newStructureInfo);
+  const handleOnSave = (value: string, key: string) => {
+    let newStructureInfo = changeStructureLabel(key, value);
+    onStructureInfoChange(newStructureInfo);
   };
 
-  const findIdsBetweenIdsInclusive = (structureInfo: ManifestStructureInfo[], id1: string, id2: string, selecting = false, selectedIds: string[] = [], canvasPath = ""): { ids: string[], selecting: boolean } => {
-    let index = 0;
+  const findKeysBetweenKeysInclusive = (structureInfo: ManifestStructureInfo[], key1: string, key2: string, selecting = false, selectedKeys: string[] = []): { keys: string[], selecting: boolean } => {
     for (let structure of structureInfo) {
-      let key = structure.id;
-      if (structure.type === "Canvas") key = key + canvasPath + "-" + index;
-      if (key === id1 || key === id2) {
+      if (structure.key === key1 || structure.key === key2) {
         if (!selecting) {
           selecting = true;
-          selectedIds.push(key);
-          selecting = findIdsBetweenIdsInclusive(structure.items, id1, id2, selecting, selectedIds, canvasPath + "-" + index).selecting;
+          selectedKeys.push(structure.key);
+          selecting = findKeysBetweenKeysInclusive(structure.items, key1, key2, selecting, selectedKeys).selecting;
         } else {
           selecting = false;
-          selectedIds.push(key);
-          return { ids: selectedIds, selecting: false };
+          selectedKeys.push(structure.key);
+          return { keys: selectedKeys, selecting: false };
         }
       } else {
         if (selecting) {
-          selectedIds.push(key);
+          selectedKeys.push(structure.key);
         }
-        selecting = findIdsBetweenIdsInclusive(structure.items, id1, id2, selecting, selectedIds, canvasPath + "-" + index).selecting;
+        selecting = findKeysBetweenKeysInclusive(structure.items, key1, key2, selecting, selectedKeys).selecting;
       }
-      index += 1;
     }
-    return { ids: selectedIds, selecting };
+    return { keys: selectedKeys, selecting };
   }
 
   const handleExpand = (expandedKeys: Key[]) => {
-    onChangeExpandedIds(expandedKeys.map((key) => key as string))
+    onExpandedKeysChange(expandedKeys.map((key) => key as string))
   }
 
-  const handleNodeClicked = (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, id: string, allowClosing: boolean) => {
+  const handleNodeClicked = (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, key: string, allowClosing: boolean) => {
     if (event.metaKey) {
-      if (selectedIds.includes(id)) {
-        let newSelectedIds = selectedIds.filter((value) => value !== id);
-        onChangeSelectedIds(newSelectedIds);
+      if (selectedKeys.includes(key)) {
+        let newSelectedKeys = selectedKeys.filter((value) => value !== key);
+        onSelectedKeysChange(newSelectedKeys);
         setSelectionStart(null);
       } else {
-        onChangeSelectedIds([...selectedIds, id]);
-        setSelectionStart(id);
+        onSelectedKeysChange([...selectedKeys, key]);
+        setSelectionStart(key);
       }
     } else if (event.shiftKey) {
-      if (id === selectionStart) {
+      if (key === selectionStart) {
         // do nothing
       } else if (selectionStart) {
-        let newSelectedIds = [...selectedIds, ...findIdsBetweenIdsInclusive(structureInfo, selectionStart, id).ids.filter((value) => !selectedIds.includes(value))];
-        onChangeSelectedIds(newSelectedIds);
-        setSelectionStart(id);
+        let newSelectedKeys = [...selectedKeys, ...findKeysBetweenKeysInclusive(structureInfo, selectionStart, key).keys.filter((value) => !selectedKeys.includes(value))];
+        onSelectedKeysChange(newSelectedKeys);
+        setSelectionStart(key);
       } else {
-        onChangeSelectedIds([id]);
-        setSelectionStart(id);
+        onSelectedKeysChange([key]);
+        setSelectionStart(key);
       }
     } else {
-      onChangeSelectedIds([id]);
-      setSelectionStart(id);
+      onSelectedKeysChange([key]);
+      setSelectionStart(key);
     }
-    if (!expandedIds.includes(id)) {
-      onChangeExpandedIds([...expandedIds, id]);
+    if (!expandedKeys.includes(key)) {
+      onExpandedKeysChange([...expandedKeys, key]);
     } else if (allowClosing) {
-      onChangeExpandedIds(expandedIds.filter((nodeId) => nodeId !== id));
+      onExpandedKeysChange(expandedKeys.filter((nodeId) => nodeId !== key));
     }
   }
 
@@ -111,25 +104,22 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     return null;
   }
 
-  const mapStructureToDataNodes = (structureInfo: ManifestStructureInfo[], canvasPath = ""): DataNode[] => {
-    let index = 0;
+  const mapStructureToDataNodes = (structureInfo: ManifestStructureInfo[]): DataNode[] => {
     return structureInfo.map((info) => {
       let imageThumb = null;
-      let key = info.id;
       let title: React.ReactNode = info.label;
+      let key = info.key;
       if (info.type === "Range") {
-        title = <EditableText defaultValue={info.label} onSave={(v) => handleOnSave(v, key)} />
+        title = <EditableText defaultValue={info.label} onSave={(v) => handleOnSave(v, info.key)} />
       } else {
         let imageIconSrc = lookupCanvasThumbnail(info.id);
         if (imageIconSrc) {
           imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" />
         }
-        key = key + canvasPath + "-" + index;
       }
-      let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} /> ) : ((expandedIds.includes(key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)
-      title = <span><span onClick={(e) => { handleNodeClicked(e, key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, key, false) }}>{title}</span></span>
-      let children = info.items && mapStructureToDataNodes(info.items, canvasPath + "-" + index);
-      index += 1;
+      let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} />) : ((expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)
+      title = <span><span onClick={(e) => { handleNodeClicked(e, info.key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, info.key, false) }}>{title}</span></span>
+      let children = info.items && mapStructureToDataNodes(info.items);
       return {
         key, title, children
       }
@@ -139,8 +129,8 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
   const allowDrop: TreeProps['allowDrop'] = ({ dropNode, dropPosition }) => {
     let allow = true;
     if (dropPosition === 0) {
-      findStructureByDataNodeKey(structureInfo, dropNode.key as string, (node, i, data)=>{
-        if (node.type === "Canvas") {
+      findStructureByKey(structureInfo, dropNode.key as string, (structure) => {
+        if (structure.type === "Canvas") {
           allow = false;
         }
       });
@@ -154,7 +144,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     const dropPos = info.node.pos.split('-');
     const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
 
-    const data = [...structureInfo];
+    const parentItems = [...structureInfo];
     //return;
 
 
@@ -162,24 +152,24 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     let dragObj: ManifestStructureInfo;
 
     // hack to keep indexes in canvas paths the same until move is complete
-    findStructureByDataNodeKey(data, dragKey, (item, index, arr) => {      
-      arr[index] = {...item, id: "DROP REMOVE", type: "Removing"};
+    findStructureByKey(parentItems, dragKey, (item, index, arr) => {
+      arr.splice(index, 1);
       dragObj = item;
     });
 
     if (!info.dropToGap) {
       // Drop on the content
-      findStructureByDataNodeKey(data, dropKey, item => {
+      findStructureByKey(parentItems, dropKey, item => {
         item.items = item.items || [];
         // where to insert 示例添加到头部，可以是随意位置
         item.items.unshift(dragObj);
       });
     } else if (
-      ((info.node as any).props.items || []).length > 0 && // Has items
-      (info.node as any).props.expanded && // Is expanded
+      ((info.node as any).items || []).length > 0 && // Has items
+      (info.node as any).expanded && // Is expanded
       dropPosition === 1 // On the bottom gap
     ) {
-      findStructureByDataNodeKey(data, dropKey, item => {
+      findStructureByKey(parentItems, dropKey, item => {
         item.items = item.items || [];
         // where to insert 示例添加到头部，可以是随意位置
         item.items.unshift(dragObj);
@@ -189,7 +179,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
     } else {
       let ar: ManifestStructureInfo[] = [];
       let i: number;
-      findStructureByDataNodeKey(data, dropKey, (_item, index, arr) => {
+      findStructureByKey(parentItems, dropKey, (_item, index, arr) => {
         ar = arr;
         i = index;
       });
@@ -199,7 +189,7 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
         ar.splice(i! + 1, 0, dragObj!);
       }
     }
-    onChangeStructureInfo(deleteItemsById(data, ["DROP REMOVE"]));
+    onStructureInfoChange(parentItems);
   };
 
 
@@ -212,9 +202,9 @@ function TreeStructure({ structureInfo, selectedIds, expandedIds, canvasInfo, on
       onDrop={onDrop}
       multiple={true}
       treeData={mapStructureToDataNodes(structureInfo)}
-      selectedKeys={selectedIds}
+      selectedKeys={selectedKeys}
       onExpand={handleExpand}
-      expandedKeys={expandedIds}
+      expandedKeys={expandedKeys}
       defaultExpandAll={true}
     />);
 }
