@@ -20,6 +20,7 @@ class TreeStructureProps {
 function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, onSelectedKeysChange, onStructureInfoChange, onExpandedKeysChange }: TreeStructureProps) {
 
   const [selectionStart, setSelectionStart] = useState<string | null>(null);
+  const [dragStructure, setDragStructure] = useState<ManifestStructureInfo | null>(null);
 
   const changeStructureLabel = (key: string, value: string): ManifestStructureInfo[] => {
     findStructureByKey(structureInfo, key, (structure) => {
@@ -126,15 +127,22 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
     })
   }
 
+  const handleDragStart: TreeProps['onDragStart'] = ({event, node}) => {
+    findStructureByKey(structureInfo, node.key as string, (structure) => {
+      setDragStructure(structure)
+    })
+  }
+
   const allowDrop: TreeProps['allowDrop'] = ({ dropNode, dropPosition }) => {
     let allow = true;
-    if (dropPosition === 0) {
-      findStructureByKey(structureInfo, dropNode.key as string, (structure) => {
-        if (structure.type === "Canvas") {
-          allow = false;
-        }
-      });
-    }
+    findStructureByKey(structureInfo, dropNode.key as string, (structure, index, items) => {
+      if ((structure.type === "Canvas" && dropPosition === 0) || 
+          (dropPosition === 0 && dragStructure!.type === "Canvas" && structure.items.find((item) => item.id === dragStructure!.id) && !structure.items.find((item) => item.key === dragStructure!.key)) || 
+          (dropPosition === 1 && dragStructure!.type === "Canvas" && items.find((item) => item.id === dragStructure!.id) && !items.find((item) => item.key === dragStructure!.key)))
+      {
+        allow = false
+      } 
+    });
     return allow;
   };
 
@@ -199,6 +207,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       draggable
       blockNode
       allowDrop={allowDrop}
+      onDragStart={handleDragStart}
       onDrop={onDrop}
       multiple={true}
       treeData={mapStructureToDataNodes(structureInfo)}
