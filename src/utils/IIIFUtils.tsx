@@ -142,7 +142,10 @@ export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: st
   findStructureByKey(structureInfo, id, (structure) => {
     if (structure.type === "Range") {
       let newItems = [...structure.items];
-      canvasInfoSet.forEach((c) => newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true, key: uuidv4() }));
+      canvasInfoSet.forEach((c) => {
+        if (!newItems.find((item) => item.id === c.canvasId)) 
+          newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true, key: uuidv4() })
+      });
       structure.items = newItems;
     }
   });
