@@ -127,21 +127,22 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
     })
   }
 
-  const handleDragStart: TreeProps['onDragStart'] = ({event, node}) => {
+  const handleDragStart: TreeProps['onDragStart'] = ({ node }) => {
     findStructureByKey(structureInfo, node.key as string, (structure) => {
       setDragStructure(structure)
     })
   }
 
   const allowDrop: TreeProps['allowDrop'] = ({ dropNode, dropPosition }) => {
+    if (!dragStructure) return false;
     let allow = true;
-    findStructureByKey(structureInfo, dropNode.key as string, (structure, index, items) => {
-      if ((structure.type === "Canvas" && dropPosition === 0) || 
-          (dropPosition === 0 && dragStructure!.type === "Canvas" && structure.items.find((item) => item.id === dragStructure!.id) && !structure.items.find((item) => item.key === dragStructure!.key)) || 
-          (dropPosition === 1 && dragStructure!.type === "Canvas" && items.find((item) => item.id === dragStructure!.id) && !items.find((item) => item.key === dragStructure!.key)))
-      {
+    let canvasWithMatchingId: any;
+    findStructureByKey(structureInfo, dropNode.key as string, (structure, _index, items) => {
+      if ((structure.type === "Canvas" && dropPosition === 0) ||
+        (dropPosition === 0 && dragStructure.type === "Canvas" && (canvasWithMatchingId = structure.items.find((item) => item.id === dragStructure.id)) && canvasWithMatchingId !== dragStructure) ||
+        (dropPosition === 1 && dragStructure.type === "Canvas" && (canvasWithMatchingId = items.find((item) => item.id === dragStructure.id)) && canvasWithMatchingId !== dragStructure)) {
         allow = false
-      } 
+      }
     });
     return allow;
   };
