@@ -120,6 +120,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
           imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" />
         }
       }
+      let spanTitle: any;
       let icon: any;
       if (info.type === "Range") {
         icon = (expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />;
@@ -127,8 +128,9 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
         icon = (imageThumb || <FontAwesomeIcon icon={faImage} />)
       } else if (info.type === "SpecificResource") {
         icon = imageIconSrc && <PartialImageIcon imageId={imageIconSrc} rectangle={info.rectangle!} ratio={20 / 500} /> || <FontAwesomeIcon icon={faImage} />
+        spanTitle = `${info.label} cropped to (${info.rectangle!.x}, ${info.rectangle!.y}, ${info.rectangle!.w}, ${info.rectangle!.h})`;
       }
-      title = <span><span onClick={(e) => { handleNodeClicked(e, info.key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, info.key, false) }}>{title}</span></span>
+      title = <span title={spanTitle}><span onClick={(e) => { handleNodeClicked(e, info.key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, info.key, false) }}>{title}</span></span>
       let children = info.items && mapStructureToDataNodes(info.items);
       return {
         key, title, children
