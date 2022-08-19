@@ -7,12 +7,14 @@ import LaunchModal from './components/LaunchModal';
 import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
+import PartialCanvasSelector from './components/PartialCanvasSelector';
 const { Sider, Content } = Layout;
 
 
 function App() {
 
   const [isOpenManifestModalVisible, setIsOpenManifestModalVisible] = useState(false);
+  const [isPartialModalVisible, setIsPartialModalVisible] = useState(false);
   const [loadedManifest, setLoadedManifest] = useState<{ [key: string]: any } | null>(null);
   const [canvasInfo, setCanvasInfo] = useState<ManifestCanvasInfo[]>([]);
   const [structureInfo, setStructureInfo] = useState<ManifestStructureInfo[]>([]);
@@ -137,14 +139,35 @@ function App() {
     }
   }
 
+  const handleOnAddPartialCanvas = () => {
+    setIsPartialModalVisible(true);
+  }
+
+  const selectedCanvasImageId = () => {
+    if (selectedCanvasIds.length > 0 ) {
+      let canvas = canvasInfo.find((c)=>c.canvasId === selectedCanvasIds[0]);
+      if ( canvas ) {
+        return canvas.imageId;
+      }
+    } 
+  }
+
+  const handleCropCanvas = () => {
+    setIsPartialModalVisible(false);
+  }
+
   return (
     <Layout className="main-container">
       <TopHeader onOpenModal={handleOpenModal}
         onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureKeys.length === 0 || isSingleRangeSelected() || structureInfo.length === 0}
         onAddCanvas={handleOnAddCanvases} addCanvasEnabled={isSingleRangeSelected() && selectedCanvasIds.length > 0}
+        onAddPartialCanvas={handleOnAddPartialCanvas} addPartialCanvasEnabled={selectedCanvasIds.length === 1}
         deleteEnabled={selectedStructureKeys.length > 0} onDelete={handleDelete} />
       <Layout>
         <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
+        <Modal visible={isPartialModalVisible} onOk={handleCropCanvas} onCancel={()=>setIsPartialModalVisible(false)}>
+          <PartialCanvasSelector imageId={selectedCanvasImageId()}/>
+        </Modal>
         <Sider className="sider">
           <TreeStructure
             selectedKeys={selectedStructureKeys}
