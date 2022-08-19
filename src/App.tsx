@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvas from './components/ImageCanvas'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, Rectangle, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey, addPartialCavasesToRange } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 import PartialCanvasSelector from './components/PartialCanvasSelector';
@@ -22,6 +22,7 @@ function App() {
   const [selectStart, setSelectStart] = useState<string | null>(null);
   const [selectedStructureKeys, setSelectedStructureKeys] = useState<string[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [selectedImageRectangle, setSelectedImageRectangle] = useState<Rectangle | null>(null);
 
   useEffect(() => {
     let canvasInfo = canvasInfoFromManifest(loadedManifest);
@@ -144,16 +145,23 @@ function App() {
   }
 
   const selectedCanvasImageId = () => {
-    if (selectedCanvasIds.length > 0 ) {
-      let canvas = canvasInfo.find((c)=>c.canvasId === selectedCanvasIds[0]);
-      if ( canvas ) {
+    if (selectedCanvasIds.length > 0) {
+      let canvas = canvasInfo.find((c) => c.canvasId === selectedCanvasIds[0]);
+      if (canvas) {
         return canvas.imageId;
       }
-    } 
+    }
   }
 
-  const handleCropCanvas = () => {
+  const handleAddPartialCanvas = () => {
     setIsPartialModalVisible(false);
+    if (selectedImageRectangle) {
+      let canvasInfos = canvasInfo.filter((o) => selectedCanvasIds.includes(o.canvasId));
+      if (canvasInfos.length === 1) {
+        let newStructureInfo = addPartialCavasesToRange(structureInfo, selectedStructureKeys[0], canvasInfos[0], selectedImageRectangle);
+        setStructureInfo(newStructureInfo);
+      }
+    }
   }
 
   return (
@@ -161,12 +169,12 @@ function App() {
       <TopHeader onOpenModal={handleOpenModal}
         onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureKeys.length === 0 || isSingleRangeSelected() || structureInfo.length === 0}
         onAddCanvas={handleOnAddCanvases} addCanvasEnabled={isSingleRangeSelected() && selectedCanvasIds.length > 0}
-        onAddPartialCanvas={handleOnAddPartialCanvas} addPartialCanvasEnabled={selectedCanvasIds.length === 1}
+        onAddPartialCanvas={handleOnAddPartialCanvas} addPartialCanvasEnabled={selectedCanvasIds.length === 1 && isSingleRangeSelected()}
         deleteEnabled={selectedStructureKeys.length > 0} onDelete={handleDelete} />
       <Layout>
         <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
-        <Modal visible={isPartialModalVisible} onOk={handleCropCanvas} onCancel={()=>setIsPartialModalVisible(false)}>
-          <PartialCanvasSelector imageId={selectedCanvasImageId()}/>
+        <Modal visible={isPartialModalVisible} onOk={handleAddPartialCanvas} onCancel={() => setIsPartialModalVisible(false)} width={600}>
+          <PartialCanvasSelector imageId={selectedCanvasImageId()} onRectangleSelected={setSelectedImageRectangle} />
         </Modal>
         <Sider className="sider">
           <TreeStructure

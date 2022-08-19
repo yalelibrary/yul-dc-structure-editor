@@ -12,7 +12,7 @@ class TopHeaderProps {
   onOpenModal!: (() => void);
   onAddRange!: (() => void);
   onAddCanvas!: (() => void);
-  onAddPartialCanvas?: (() => void);  
+  onAddPartialCanvas?: (() => void);
   onDelete!: (() => void);
 }
 

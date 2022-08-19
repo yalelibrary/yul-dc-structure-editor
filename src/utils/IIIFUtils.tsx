@@ -12,6 +12,13 @@ export function extractIIIFLabel(obj: any, defaultValue: string = ""): string {
   return title;
 }
 
+export type Rectangle = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export type ManifestCanvasInfo = {
   label: string;
   imageId: string;
@@ -21,7 +28,7 @@ export type ManifestCanvasInfo = {
   index: number;
 }
 
-export type StructureInfoType = "Range" | "Canvas" | "Removing";
+export type StructureInfoType = "Range" | "Canvas" | "SpecificResource";
 
 export type ManifestStructureInfo = {
   key: string;
@@ -30,6 +37,7 @@ export type ManifestStructureInfo = {
   id: string;
   newItem: boolean;
   items: ManifestStructureInfo[];
+  rectangle?: Rectangle;
 }
 
 export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] | null {
@@ -143,9 +151,25 @@ export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: st
     if (structure.type === "Range") {
       let newItems = [...structure.items];
       canvasInfoSet.forEach((c) => {
-        if (!newItems.find((item) => item.id === c.canvasId)) 
+        if (!newItems.find((item) => item.id === c.canvasId))
           newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true, key: uuidv4() })
       });
+      structure.items = newItems;
+    }
+  });
+  return [...structureInfo];
+}
+
+
+export function addPartialCavasesToRange(structureInfo: ManifestStructureInfo[], id: string, canvasInfo: ManifestCanvasInfo, rectangle: Rectangle): ManifestStructureInfo[] {
+  findStructureByKey(structureInfo, id, (structure) => {
+    if (structure.type === "Range") {
+      rectangle.x = Math.round(rectangle.x);
+      rectangle.y = Math.round(rectangle.y);
+      rectangle.w = Math.round(rectangle.w);
+      rectangle.h = Math.round(rectangle.h);
+      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: rectangle }
+      let newItems = [...structure.items, newItem];
       structure.items = newItems;
     }
   });

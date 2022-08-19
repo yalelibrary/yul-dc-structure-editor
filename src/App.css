@@ -18,7 +18,7 @@
   user-select: none;
 }
 
-.item-label, .item-label{
+.item-label {
   overflow-y: auto;
   max-height: 100%;
 }

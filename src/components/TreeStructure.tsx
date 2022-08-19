@@ -6,6 +6,7 @@ import EditableText from './EditableText';
 import { Key } from 'antd/lib/table/interface';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFolderOpen, faImage } from '@fortawesome/free-solid-svg-icons';
+import PartialImageIcon from './PartialImageIcon';
 
 class TreeStructureProps {
   structureInfo!: ManifestStructureInfo[];
@@ -110,15 +111,23 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       let imageThumb = null;
       let title: React.ReactNode = info.label;
       let key = info.key;
+      let imageIconSrc;
       if (info.type === "Range") {
         title = <EditableText defaultValue={info.label} onSave={(v) => handleOnSave(v, info.key)} />
       } else {
-        let imageIconSrc = lookupCanvasThumbnail(info.id);
+        imageIconSrc = lookupCanvasThumbnail(info.id);
         if (imageIconSrc) {
           imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" />
         }
       }
-      let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} />) : ((expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)
+      let icon: any;
+      if (info.type === "Range") {
+        icon = (expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />;
+      } else if (info.type === "Canvas") {
+        icon = (imageThumb || <FontAwesomeIcon icon={faImage} />)
+      } else if (info.type === "SpecificResource") {
+        icon = imageIconSrc && <PartialImageIcon imageId={imageIconSrc} rectangle={info.rectangle!} ratio={20 / 500} /> || <FontAwesomeIcon icon={faImage} />
+      }
       title = <span><span onClick={(e) => { handleNodeClicked(e, info.key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, info.key, false) }}>{title}</span></span>
       let children = info.items && mapStructureToDataNodes(info.items);
       return {
@@ -127,7 +136,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
     })
   }
 
-  const handleDragStart: TreeProps['onDragStart'] = ({event, node}) => {
+  const handleDragStart: TreeProps['onDragStart'] = ({ event, node }) => {
     findStructureByKey(structureInfo, node.key as string, (structure) => {
       setDragStructure(structure)
     })
@@ -136,12 +145,11 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
   const allowDrop: TreeProps['allowDrop'] = ({ dropNode, dropPosition }) => {
     let allow = true;
     findStructureByKey(structureInfo, dropNode.key as string, (structure, index, items) => {
-      if ((structure.type === "Canvas" && dropPosition === 0) || 
-          (dropPosition === 0 && dragStructure!.type === "Canvas" && structure.items.find((item) => item.id === dragStructure!.id) && !structure.items.find((item) => item.key === dragStructure!.key)) || 
-          (dropPosition === 1 && dragStructure!.type === "Canvas" && items.find((item) => item.id === dragStructure!.id) && !items.find((item) => item.key === dragStructure!.key)))
-      {
+      if ((structure.type !== "Range" && dropPosition === 0) ||
+        (dropPosition === 0 && dragStructure!.type === "Canvas" && structure.items.find((item) => item.id === dragStructure!.id) && !structure.items.find((item) => item.key === dragStructure!.key)) ||
+        (dropPosition === 1 && dragStructure!.type === "Canvas" && items.find((item) => item.id === dragStructure!.id) && !items.find((item) => item.key === dragStructure!.key))) {
         allow = false
-      } 
+      }
     });
     return allow;
   };
