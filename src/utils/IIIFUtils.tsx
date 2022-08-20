@@ -95,19 +95,44 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
 function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
-  let type: StructureInfoType = (structure["type"] === "Canvas") ? "Canvas" : "Range";
+  let type: StructureInfoType;
+  let rectangle: Rectangle | undefined = undefined;
+  switch (structure["type"]) {
+    case "Canvas":
+      type = "Canvas";
+      break;
+    case "SpecificResource":
+      type = "SpecificResource";
+      break;
+    default:
+      type = "Range";
+      break;
+  }
   let items = [];
   if (type === "Range" && structure["items"]) {
     for (let item of structure["items"]) {
       items.push(extractStructureInfoFromManifest(item, itemIdToLabelMap));
     }
   }
-  if (!label && type === "Canvas") {
+  if (type === "SpecificResource") {
+    id = structure["source"];
+    let selector = structure["selector"];
+    if (selector["type"] === "FragmentSelector" && selector["value"]) {
+      let shape: string = selector["value"];
+      if (shape.startsWith("xywh=")) {
+        let rect = shape.substring("xywh=".length).split(",");
+        if (rect.length === 4) {
+          rectangle = { x: parseInt(rect[0]), y: parseInt(rect[1]), w: parseInt(rect[2]), h: parseInt(rect[3]) };
+        }
+      }
+    }
+  }
+  if (!label && type !== "Range") {
     label = itemIdToLabelMap[id] || "";
     let idParts = id.split("/");
     label += ": (" + idParts[idParts.length - 1] + ")";
   }
-  return { label, id, type, newItem: false, items, key: uuidv4() };
+  return { label, id, type, newItem: false, items, rectangle, key: uuidv4() };
 }
 
 // recursively look trough the tree to find the structure by key

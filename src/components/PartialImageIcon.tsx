@@ -3,7 +3,7 @@ import { Rectangle } from '../utils/IIIFUtils';
 
 class PartialImageIconProps {
     imageId!: string;
-    rectangle!: Rectangle;
+    rectangle?: Rectangle;
     ratio!: number;
 };
 
@@ -13,7 +13,7 @@ function PartialImageIcon({ imageId, rectangle, ratio }: PartialImageIconProps) 
     let imageCanvas = useRef<HTMLCanvasElement>(null);
 
     const handleImageLoaded = () => {
-        if (imageCanvas.current && imageRef.current) {
+        if (imageCanvas.current && imageRef.current && rectangle) {
             imageCanvas.current.style.width = imageRef.current.offsetWidth + "px";
             imageCanvas.current.style.height = imageRef.current.offsetHeight + "px";
             imageCanvas.current.width = imageRef.current.offsetWidth;
@@ -42,11 +42,8 @@ function PartialImageIcon({ imageId, rectangle, ratio }: PartialImageIconProps) 
                 context.closePath();
                 context.stroke();
             }
-
         }
     };
-
-
     let imageIdComponents = imageId.split("/");
     imageIdComponents[imageIdComponents.length - 3] = "!20,20";
     let imageSrc = imageIdComponents.join("/");
