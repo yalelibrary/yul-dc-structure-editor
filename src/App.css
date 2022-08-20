@@ -47,3 +47,8 @@
   color: black;
   background-color: white;
 }
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}

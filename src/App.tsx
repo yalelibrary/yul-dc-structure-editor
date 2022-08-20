@@ -173,7 +173,7 @@ function App() {
         deleteEnabled={selectedStructureKeys.length > 0} onDelete={handleDelete} />
       <Layout>
         <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
-        <Modal visible={isPartialModalVisible} onOk={handleAddPartialCanvas} onCancel={() => setIsPartialModalVisible(false)} width={600}>
+        <Modal visible={isPartialModalVisible} onOk={handleAddPartialCanvas} onCancel={() => setIsPartialModalVisible(false)} width={650} className="no-select">
           <PartialCanvasSelector imageId={selectedCanvasImageId()} onRectangleSelected={setSelectedImageRectangle} />
         </Modal>
         <Sider className="sider">

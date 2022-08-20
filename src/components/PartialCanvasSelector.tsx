@@ -108,8 +108,9 @@ function PartialCanvasSelector({ imageId, onRectangleSelected }: PartialCanvasSe
 
     return (
         <div
-            style={{ userSelect: "none", padding: "10px" }}
+            style={{ userSelect: "none", padding: "30px", margin: "10px" }}
             draggable={false}
+            className="no-select"
             onSelect={() => false}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
