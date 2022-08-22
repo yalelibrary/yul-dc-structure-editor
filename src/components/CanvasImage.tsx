@@ -5,10 +5,11 @@ import { useInView } from "react-intersection-observer";
 class CanvasImageProps {
     selected: boolean = false;
     info!: ManifestCanvasInfo;
+    maxWidthHeight: number = 200;
     onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-function CanvasImage({ selected, info, onClick }: CanvasImageProps) {
+function CanvasImage({ selected, info, maxWidthHeight, onClick }: CanvasImageProps) {
     const [loaded, setLoaded] = useState(false);
     const { ref, inView } = useInView({
         threshold: 0,
@@ -24,7 +25,7 @@ function CanvasImage({ selected, info, onClick }: CanvasImageProps) {
     return <>
         <div ref={divRef} className={'item' + (selected ? " selected" : "")} >
             <div key={info.imageId} onClick={onClick} ref={ref} >
-                {(inView || loaded) && <img src={info.thumbnail} loading="lazy" alt={info.label + " " + info.oid} onLoad={handleImageLoaded} ref={imageRef} />}
+                {(inView || loaded) && <img src={info.thumbnail.replace("/!200,200/", `/!${maxWidthHeight},${maxWidthHeight}/`)} loading="lazy" alt={info.label + " " + info.oid} onLoad={handleImageLoaded} ref={imageRef} />}
                 <br />
                 <div className='item-info'>
                     <span className='item-index'>{(info.index + 1) + ": "}</span>

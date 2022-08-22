@@ -5,14 +5,15 @@ import CanvasImage from './CanvasImage';
 class ImageListProps {
   selectedCanvasIds: string[] = [];
   canvasInfo: ManifestCanvasInfo[] = [];
+  maxWidthHeight: number = 200;
   onCanvasClick?: ((canvasId: string, shiftKey: boolean, metaKey: boolean) => void);
 }
 
-function ImageCanvases({ canvasInfo, selectedCanvasIds, onCanvasClick }: ImageListProps) {
+function ImageCanvases({ canvasInfo, selectedCanvasIds, maxWidthHeight, onCanvasClick }: ImageListProps) {
   return (
     <div className='image-list'>
       {canvasInfo.map((info) => {
-        return <CanvasImage info={info} selected={selectedCanvasIds.includes(info.canvasId)} onClick={(e) => onCanvasClick && onCanvasClick(info.canvasId, e.shiftKey, e.metaKey)} />
+        return <CanvasImage info={info} maxWidthHeight={maxWidthHeight} selected={selectedCanvasIds.includes(info.canvasId)} onClick={(e) => onCanvasClick && onCanvasClick(info.canvasId, e.shiftKey, e.metaKey)} />
       })}
     </div>
   );
