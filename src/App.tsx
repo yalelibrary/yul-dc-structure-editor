@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Modal } from 'antd';
 import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
-import ImageCanvas from './components/ImageCanvas'
+import ImageCanvases from './components/ImageCanvases'
 import LaunchModal from './components/LaunchModal';
 import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey } from './utils/IIIFUtils';
 import './App.css';
@@ -157,7 +157,7 @@ function App() {
           />
         </Sider>
         <Content>
-          <ImageCanvas canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} onCanvasClick={handleCanvasClicked} />
+          <ImageCanvases canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} maxWidthHeight={200} onCanvasClick={handleCanvasClicked} />
         </Content>
       </Layout>
     </Layout>
