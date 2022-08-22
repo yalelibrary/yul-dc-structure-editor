@@ -12,6 +12,15 @@ export function extractIIIFLabel(obj: any, defaultValue: string = ""): string {
   return title;
 }
 
+export function extractIIIFWidthHeight(item: any): { width: number, height: number } {
+  let anno = item["items"]?.[0]?.["items"]?.[0];
+  let body = anno?.["body"];
+  let width = body["width"];
+  let height = body["height"];
+  return { width, height };
+}
+
+
 export type Rectangle = {
   x: number;
   y: number;
@@ -26,6 +35,8 @@ export type ManifestCanvasInfo = {
   oid: string;
   thumbnail: string;
   index: number;
+  width: number;
+  height: number;
 }
 
 export type StructureInfoType = "Range" | "Canvas" | "SpecificResource";
@@ -37,6 +48,8 @@ export type ManifestStructureInfo = {
   id: string;
   newItem: boolean;
   items: ManifestStructureInfo[];
+  width?: number;
+  height?: number;
   rectangle?: Rectangle;
 }
 
@@ -63,6 +76,8 @@ export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] 
       } else {
         label = oid;
       }
+      let width = body["width"];
+      let height = body["height"];
       canvasInfo.push({
         label: label,
         imageId: imageId,
@@ -70,6 +85,8 @@ export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] 
         oid: oid,
         thumbnail: thumbnail,
         index: ix++,
+        width,
+        height
       }
       );
     }
@@ -81,22 +98,26 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
   let structures: ManifestStructureInfo[] | null = null;
   if (manifestData && manifestData["structures"]) {
     let itemIdToLabelMap: any = {};
+    let itemIdToWidthHeightMap: any = {};
     for (let item of manifestData["items"]) {
       itemIdToLabelMap[item["id"]] = extractIIIFLabel(item);
+      itemIdToWidthHeightMap[item["id"]] = extractIIIFWidthHeight(item);
     }
     structures = [];
     for (let structure of manifestData["structures"]) {
-      structures.push(extractStructureInfoFromManifest(structure, itemIdToLabelMap))
+      structures.push(extractStructureInfoFromManifest(structure, itemIdToLabelMap, itemIdToWidthHeightMap))
     }
   }
   return structures;
 }
 
-function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
+function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any, itemIdToWidthHeightMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
   let type: StructureInfoType;
   let rectangle: Rectangle | undefined = undefined;
+  let width: number | undefined = undefined;
+  let height: number | undefined = undefined;
   switch (structure["type"]) {
     case "Canvas":
       type = "Canvas";
@@ -111,7 +132,7 @@ function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any)
   let items = [];
   if (type === "Range" && structure["items"]) {
     for (let item of structure["items"]) {
-      items.push(extractStructureInfoFromManifest(item, itemIdToLabelMap));
+      items.push(extractStructureInfoFromManifest(item, itemIdToLabelMap, itemIdToWidthHeightMap));
     }
   }
   if (type === "SpecificResource") {
@@ -127,12 +148,18 @@ function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any)
       }
     }
   }
+  if (type !== "Range") {
+    label = itemIdToLabelMap[id];
+    let wh = itemIdToWidthHeightMap[id];
+    width = wh.width;
+    height = wh.height;
+  }
   if (!label && type !== "Range") {
     label = itemIdToLabelMap[id] || "";
     let idParts = id.split("/");
     label += ": (" + idParts[idParts.length - 1] + ")";
   }
-  return { label, id, type, newItem: false, items, rectangle, key: uuidv4() };
+  return { label, id, type, newItem: false, items, rectangle, height, width, key: uuidv4() };
 }
 
 // recursively look trough the tree to find the structure by key
@@ -177,7 +204,7 @@ export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: st
       let newItems = [...structure.items];
       canvasInfoSet.forEach((c) => {
         if (!newItems.find((item) => item.id === c.canvasId))
-          newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true, key: uuidv4() })
+          newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true, width: c.width, height: c.height, key: uuidv4() })
       });
       structure.items = newItems;
     }
@@ -186,14 +213,14 @@ export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: st
 }
 
 
-export function addPartialCavasesToRange(structureInfo: ManifestStructureInfo[], id: string, canvasInfo: ManifestCanvasInfo, rectangle: Rectangle): ManifestStructureInfo[] {
+export function addPartialCavasToRange(structureInfo: ManifestStructureInfo[], id: string, canvasInfo: ManifestCanvasInfo, rectangle: Rectangle): ManifestStructureInfo[] {
   findStructureByKey(structureInfo, id, (structure) => {
     if (structure.type === "Range") {
       rectangle.x = Math.round(rectangle.x);
       rectangle.y = Math.round(rectangle.y);
       rectangle.w = Math.round(rectangle.w);
       rectangle.h = Math.round(rectangle.h);
-      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: rectangle }
+      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: rectangle, width: canvasInfo.width, height: canvasInfo.height }
       let newItems = [...structure.items, newItem];
       structure.items = newItems;
     }

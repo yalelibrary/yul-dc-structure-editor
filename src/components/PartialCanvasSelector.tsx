@@ -3,6 +3,7 @@ import { Rectangle } from '../utils/IIIFUtils';
 
 class PartialCanvasSelectorProps {
     imageId?: string;
+    maxWidthHeight!: number;
     onRectangleSelected?: (rect: Rectangle) => void;
 };
 
@@ -11,7 +12,7 @@ type Position = {
     y: number;
 }
 
-function PartialCanvasSelector({ imageId, onRectangleSelected }: PartialCanvasSelectorProps) {
+function PartialCanvasSelector({ imageId, maxWidthHeight, onRectangleSelected }: PartialCanvasSelectorProps) {
 
     const [boxStart, setBoxStart] = useState<Position | null>(null);
     const [boxEnd, setBoxEnd] = useState<Position | null>(null);
@@ -21,7 +22,7 @@ function PartialCanvasSelector({ imageId, onRectangleSelected }: PartialCanvasSe
     let imageCanvas = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        if (imageCanvas.current && imageRef.current) {
+        if (imageCanvas.current && imageRef.current && (imageCanvas.current.width !== imageRef.current.offsetWidth || imageCanvas.current.clientHeight !== imageRef.current.offsetHeight)) { //resize canvas if necessary
             imageCanvas.current.style.width = imageRef.current.offsetWidth + "px";
             imageCanvas.current.style.height = imageRef.current.offsetHeight + "px";
             imageCanvas.current.width = imageRef.current.offsetWidth;
@@ -39,8 +40,8 @@ function PartialCanvasSelector({ imageId, onRectangleSelected }: PartialCanvasSe
             if (imageCanvas.current) {
                 const context = imageCanvas.current.getContext('2d');
                 if (context) {
+                    context.clearRect(0, 0, imageCanvas.current.width, imageCanvas.current.height);
                     context.strokeStyle = 'red';
-                    context.lineJoin = 'round';
                     context.lineWidth = 5;
 
                     context.beginPath();
@@ -57,6 +58,7 @@ function PartialCanvasSelector({ imageId, onRectangleSelected }: PartialCanvasSe
         }
     }, [boxStart, boxEnd]);
 
+    // clear selection when image changes.
     useEffect(() => {
         setBoxRect(null);
         setBoxStart(null);
@@ -66,7 +68,7 @@ function PartialCanvasSelector({ imageId, onRectangleSelected }: PartialCanvasSe
 
     if (!imageId) return <>No Image Selected</>
     let imageIdComponents = imageId.split("/");
-    imageIdComponents[imageIdComponents.length - 3] = "!500,500";
+    imageIdComponents[imageIdComponents.length - 3] = `!${maxWidthHeight},${maxWidthHeight}`;
     let imgSrc = imageIdComponents.join("/");
 
     const extractMousePosition = (event: any): Position => {
@@ -122,7 +124,7 @@ function PartialCanvasSelector({ imageId, onRectangleSelected }: PartialCanvasSe
                 style={{ position: "absolute" }}
                 ref={imageCanvas} />
             <img
-                key={imgSrc}
+                key={imgSrc} // use imgSrc as key so prior image doesn't load
                 ref={imageRef}
                 onDragStart={() => false}
                 draggable={false}

@@ -23,7 +23,6 @@ function PartialImageIcon({ imageId, rectangle, ratio }: PartialImageIconProps) 
             const context = imageCanvas.current.getContext('2d');
             if (context) {
                 context.strokeStyle = 'red';
-                context.lineJoin = 'round';
                 context.lineWidth = 2;
                 let x = rectangle.x * ratio;
                 let y = rectangle.y * ratio;
