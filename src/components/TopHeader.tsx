@@ -1,4 +1,4 @@
-import { faRemove } from '@fortawesome/free-solid-svg-icons';
+import { faRemove, faSave } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Layout, Button, Divider } from 'antd';
 import React from 'react';
@@ -8,13 +8,15 @@ class TopHeaderProps {
   addRangeEnabled: boolean = true;
   addCanvasEnabled: boolean = true;
   deleteEnabled: boolean = true;
+  saveManifest: boolean = true;
   onOpenModal!: (() => void);
   onAddRange!: (() => void);
   onAddCanvas!: (() => void);
   onDelete!: (() => void);
+  onSubmit!: (() => void);
 }
 
-function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, onOpenModal, onAddRange, onAddCanvas, onDelete }: TopHeaderProps) {
+function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, onOpenModal, onAddRange, onAddCanvas, onDelete, onSubmit, saveManifest }: TopHeaderProps) {
 
   return (<Header className='display-flex header'>
     <Button onClick={onOpenModal}>
@@ -31,6 +33,10 @@ function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, onOpenMod
     <Button onClick={onDelete} disabled={!deleteEnabled} title="Delete Selected Structure Items">
       <FontAwesomeIcon icon={faRemove} />
     </Button>
+    <Button onClick={onSubmit} disabled={!saveManifest} title="Submit ">
+      Submit
+    </Button>
+
   </Header>);
 }
 

@@ -84,6 +84,23 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
   return structures;
 }
 
+export function manifestFromStructureInfo(structureInfo: ManifestStructureInfo[]): any[] | null {
+  let structure = [];
+
+  if (man && manifestData["structures"]) {
+    let itemIdToLabelMap: any = {};
+    for (let item of manifestData["items"]) {
+      itemIdToLabelMap[item["id"]] = extractIIIFLabel(item);
+    }
+    structures = [];
+    for (let structure of manifestData["structures"]) {
+      structures.push(extractStructureInfoFromManifest(structure, itemIdToLabelMap))
+    }
+  }
+  return structures;
+}
+
+
 function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
@@ -143,7 +160,7 @@ export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: st
     if (structure.type === "Range") {
       let newItems = [...structure.items];
       canvasInfoSet.forEach((c) => {
-        if (!newItems.find((item) => item.id === c.canvasId)) 
+        if (!newItems.find((item) => item.id === c.canvasId))
           newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true, key: uuidv4() })
       });
       structure.items = newItems;
