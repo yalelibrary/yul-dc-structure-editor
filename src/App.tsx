@@ -4,7 +4,7 @@ import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvases from './components/ImageCanvases'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, manifestFromStructureInfo, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -137,8 +137,8 @@ function App() {
     }
   }
 
-  const handleSubmit =() => {
-    console.log(structureInfo)
+  const handleSubmit = () => {
+    console.log(manifestFromStructureInfo(structureInfo));
   }
 
   return (
@@ -147,8 +147,8 @@ function App() {
         onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureKeys.length === 0 || isSingleRangeSelected() || structureInfo.length === 0}
         onAddCanvas={handleOnAddCanvases} addCanvasEnabled={isSingleRangeSelected() && selectedCanvasIds.length > 0}
         deleteEnabled={selectedStructureKeys.length > 0} onDelete={handleDelete}
-        saveManifest={true} onSubmit={handleSubmit}/>
-        
+        saveManifest={true} onSubmit={handleSubmit} />
+
       <Layout>
         <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
         <Sider className="sider">

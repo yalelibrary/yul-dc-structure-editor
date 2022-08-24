@@ -85,21 +85,27 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
 }
 
 export function manifestFromStructureInfo(structureInfo: ManifestStructureInfo[]): any[] | null {
-  let structure = [];
+  let structure: any[] | null = [];
 
-  if (man && manifestData["structures"]) {
-    let itemIdToLabelMap: any = {};
-    for (let item of manifestData["items"]) {
-      itemIdToLabelMap[item["id"]] = extractIIIFLabel(item);
-    }
-    structures = [];
-    for (let structure of manifestData["structures"]) {
-      structures.push(extractStructureInfoFromManifest(structure, itemIdToLabelMap))
+  if (structureInfo) {
+    for (let s of structureInfo) {
+      console.log(s);
+      var res = Object.keys(s).reduce(function (obj, k) {
+        if (k != '_key' && k != '_newItem') {
+          obj[k] = s[k];
+        }
+        return obj;
+      }, {});
+   
+      if (s['items']) {
+        manifestFromStructureInfo(s['items'])
+      }
+      structure.push(s);
     }
   }
-  return structures;
-}
+  return structure;
 
+}
 
 function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
