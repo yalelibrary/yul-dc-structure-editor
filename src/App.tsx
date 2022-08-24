@@ -198,7 +198,7 @@ function App() {
           />
         </Sider>
         <Content>
-          <ImageCanvases canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} onCanvasClick={handleCanvasClicked} />
+          <ImageCanvases canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} maxWidthHeight={200} onCanvasClick={handleCanvasClicked} />
         </Content>
       </Layout>
     </Layout>
