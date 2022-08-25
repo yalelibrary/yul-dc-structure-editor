@@ -29,10 +29,10 @@ function PartialImageIcon({ imageId, rectangle, ratio }: PartialImageIconProps) 
                 let w = rectangle.w * ratio;
                 let h = rectangle.h * ratio;
                 context.beginPath();
-                context.shadowBlur = 2;
-                context.shadowOffsetX = 1;
-                context.shadowOffsetY = 1;
-                context.shadowColor = "orange";
+                context.shadowBlur = 5;
+                context.shadowOffsetX = 2;
+                context.shadowOffsetY = 2;
+                context.shadowColor = 'rgba(0, 0, 0, .8)';
                 context.moveTo(x, y);
                 context.lineTo(x + w, y);
                 context.lineTo(x + w, y + h);

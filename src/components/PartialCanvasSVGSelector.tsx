@@ -5,6 +5,7 @@ class PartialCanvasSelectorProps {
     imageId?: string;
     maxWidthHeight!: number;
     onRectangleSelected?: (rect: Rectangle) => void;
+    onSvgSelected?: (points: Position[]) => void;
 };
 
 type Position = {
@@ -12,12 +13,13 @@ type Position = {
     y: number;
 }
 
-function PartialCanvasSelector({ imageId, maxWidthHeight, onRectangleSelected }: PartialCanvasSelectorProps) {
+function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onRectangleSelected }: PartialCanvasSelectorProps) {
 
     const [boxStart, setBoxStart] = useState<Position | null>(null);
     const [boxEnd, setBoxEnd] = useState<Position | null>(null);
     const [boxRect, setBoxRect] = useState<Rectangle | null>(null);
     const [mouseIsDown, setMouseIsDown] = useState<boolean>(false);
+    const [svgPositions, setSvgPositions] = useState<Position[]>([]);
     let imageRef = useRef<HTMLImageElement>(null);
     let imageCanvas = useRef<HTMLCanvasElement>(null);
 
@@ -30,31 +32,29 @@ function PartialCanvasSelector({ imageId, maxWidthHeight, onRectangleSelected }:
             imageCanvas.current.style.top = imageRef.current.offsetTop + "px";
             imageCanvas.current.style.left = imageRef.current.offsetLeft + "px";
         }
-        if (boxStart && boxEnd) {
-            let x = Math.min(boxStart.x, boxEnd.x);
-            let y = Math.min(boxStart.y, boxEnd.y);
-            let w = Math.abs(boxStart.x - boxEnd.x);
-            let h = Math.abs(boxStart.y - boxEnd.y);
-            let p = { x, y, w, h };
-            setBoxRect(p);
-            if (imageCanvas.current) {
-                const context = imageCanvas.current.getContext('2d');
-                if (context) {
-                    context.clearRect(0, 0, imageCanvas.current.width, imageCanvas.current.height);
-                    context.strokeStyle = 'red';
-                    context.lineWidth = 5;
-                    context.setLineDash([10, 5]);
-                    context.strokeRect(x, y, w, h);
+        if (imageCanvas.current) {
+            const context = imageCanvas.current.getContext('2d');
+            if (context) {
+                context.clearRect(0, 0, imageCanvas.current.width, imageCanvas.current.height);
+                context.strokeStyle = 'red';
+                context.lineWidth = 5;
+                if (svgPositions.length > 0) {
+                    context.beginPath();
+                    context.moveTo(svgPositions[0].x, svgPositions[0].y);
+                    for (let i = 1; i < svgPositions.length; i++) {
+                        context.lineTo(svgPositions[i].x, svgPositions[i].y);
+                    }
+                    context.closePath();
+                    context.stroke();
                 }
+
             }
         }
-    }, [boxStart, boxEnd]);
+    }, [svgPositions]);
 
     // clear selection when image changes.
     useEffect(() => {
-        setBoxRect(null);
-        setBoxStart(null);
-        setBoxEnd(null);
+        setSvgPositions([]);
     }, [imageId]);
 
 
@@ -71,19 +71,39 @@ function PartialCanvasSelector({ imageId, maxWidthHeight, onRectangleSelected }:
     }
 
     const handleMouseDown = (event: any) => {
-        let p = extractMousePosition(event);
-        setBoxStart(p);
-        setBoxEnd(p);
         setMouseIsDown(true);
+        let p = extractMousePosition(event);
+        // if it's near an existing point, reorder positions so that it's last, otherwise add a new one
+        let m = 8;
+        for (let i = 0; i < svgPositions.length - 1; i++) {
+            let pos = svgPositions[i];
+            if (Math.abs(pos.x - p.x) < m && Math.abs(pos.x - p.x) < m) {
+                // close enough
+                let newPositions: Position[];
+                if (i === 0) {
+                    newPositions = svgPositions.slice(1);
+                } else if (i + 1 < svgPositions.length) {
+                    newPositions = svgPositions.slice(i + 1);
+                } else {
+                    newPositions = [];
+                }
+                if (i > 0) {
+                    newPositions = newPositions.concat(svgPositions.slice(0, i));
+                }
+                newPositions.push(svgPositions[i]);
+                setSvgPositions(newPositions);
+                return;
+            }
+        }
+        setSvgPositions([...svgPositions, p]);
     }
 
     const handleMouseMove = (event: any) => {
-        if (mouseIsDown) {
+        if (mouseIsDown && svgPositions.length > 0) {
             let p = extractMousePosition(event);
-            if (!boxStart) {
-                setBoxStart(p);
-            }
-            setBoxEnd(p);
+            svgPositions[svgPositions.length - 1].x = p.x;
+            svgPositions[svgPositions.length - 1].y = p.y;
+            setSvgPositions([...svgPositions]);
         }
     }
 
@@ -126,4 +146,4 @@ function PartialCanvasSelector({ imageId, maxWidthHeight, onRectangleSelected }:
     );
 }
 
-export default PartialCanvasSelector;
+export default PartialCanvasSVGSelector;

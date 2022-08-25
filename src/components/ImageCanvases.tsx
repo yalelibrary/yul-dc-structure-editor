@@ -13,7 +13,7 @@ function ImageCanvases({ canvasInfo, selectedCanvasIds, maxWidthHeight, onCanvas
   return (
     <div className='image-list'>
       {canvasInfo.map((info) => {
-        return <CanvasImage info={info} maxWidthHeight={maxWidthHeight} selected={selectedCanvasIds.includes(info.canvasId)} onClick={(e) => onCanvasClick && onCanvasClick(info.canvasId, e.shiftKey, e.metaKey)} />
+        return <CanvasImage info={info} key={info.canvasId} maxWidthHeight={maxWidthHeight} selected={selectedCanvasIds.includes(info.canvasId)} onClick={(e) => onCanvasClick && onCanvasClick(info.canvasId, e.shiftKey, e.metaKey)} />
       })}
     </div>
   );
