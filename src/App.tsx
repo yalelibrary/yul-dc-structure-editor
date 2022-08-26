@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Modal } from 'antd';
-import { downloadManifest, setApiKeyGlobal } from './utils/ManagementUtils';
+import { downloadManifest, saveManifest, setApiKeyGlobal } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvases from './components/ImageCanvases'
 import LaunchModal from './components/LaunchModal';
@@ -14,6 +14,7 @@ function App() {
 
   const [isOpenManifestModalVisible, setIsOpenManifestModalVisible] = useState(false);
   const [loadedManifest, setLoadedManifest] = useState<{ [key: string]: any } | null>(null);
+  const [manifestUrl, setManifestUrl] = useState<string | null>(null);
   const [canvasInfo, setCanvasInfo] = useState<ManifestCanvasInfo[]>([]);
   const [structureInfo, setStructureInfo] = useState<ManifestStructureInfo[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = useState<string[]>([]);
@@ -55,6 +56,7 @@ function App() {
     setLoadedManifest(null);
     downloadManifest(manifestUrl).then((manifest) => {
       setLoadedManifest(manifest);
+      setManifestUrl(manifestUrl);
       showInfo("Success", "Manifest Downloaded");
     }).catch((error) => {
       showError("Unable to download", error.response?.message || "Error Downloading Manifest");
@@ -138,7 +140,16 @@ function App() {
   }
 
   const handleSubmit = () => {
-    console.log(manifestFromStructureInfo(structureInfo));
+    if (manifestUrl) {
+      let manifest = { ...loadedManifest }
+      manifest['structures'] = manifestFromStructureInfo(structureInfo);
+      saveManifest(manifestUrl, manifest).then((manifest) => {
+        setLoadedManifest(manifest);
+        showInfo("Success", "Manifest Saved");
+      }).catch((error) => {
+        showError("Unable to save", error.response?.message || "Error Saving Manifest");
+      })
+    }
   }
 
   return (
