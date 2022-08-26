@@ -21,7 +21,7 @@ export type ManifestCanvasInfo = {
   index: number;
 }
 
-export type StructureInfoType = "Range" | "Canvas" | "Removing";
+export type StructureInfoType = "Range" | "Canvas";
 
 export type ManifestStructureInfo = {
   key: string;
@@ -90,21 +90,14 @@ export function manifestFromStructureInfo(structureInfo: ManifestStructureInfo[]
   if (structureInfo) {
     for (let s of structureInfo) {
       console.log(s);
-      var res = Object.keys(s).reduce(function (obj, k) {
-        if (k != '_key' && k != '_newItem') {
-          obj[k] = s[k];
-        }
-        return obj;
-      }, {});
-   
-      if (s['items']) {
-        manifestFromStructureInfo(s['items'])
+      if (s.type === "Canvas") {
+        structure.push({type:"Canvas", id: s.id})
+      } else if (s.type === "Range") {
+        structure.push({type:"Range", id: s.id, items: manifestFromStructureInfo(s.items), label: {'en':[s.label]}})
       }
-      structure.push(s);
     }
   }
   return structure;
-
 }
 
 function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
