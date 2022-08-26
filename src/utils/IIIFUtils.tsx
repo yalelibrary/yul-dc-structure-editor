@@ -21,7 +21,7 @@ export type ManifestCanvasInfo = {
   index: number;
 }
 
-export type StructureInfoType = "Range" | "Canvas" | "Removing";
+export type StructureInfoType = "Range" | "Canvas";
 
 export type ManifestStructureInfo = {
   key: string;
@@ -84,6 +84,22 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
   return structures;
 }
 
+export function manifestFromStructureInfo(structureInfo: ManifestStructureInfo[]): any[] | null {
+  let structure: any[] | null = [];
+
+  if (structureInfo) {
+    for (let s of structureInfo) {
+      console.log(s);
+      if (s.type === "Canvas") {
+        structure.push({type:"Canvas", id: s.id})
+      } else if (s.type === "Range") {
+        structure.push({type:"Range", id: s.id, items: manifestFromStructureInfo(s.items), label: {'en':[s.label]}})
+      }
+    }
+  }
+  return structure;
+}
+
 function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
@@ -143,7 +159,7 @@ export function addCavasesToRange(structureInfo: ManifestStructureInfo[], id: st
     if (structure.type === "Range") {
       let newItems = [...structure.items];
       canvasInfoSet.forEach((c) => {
-        if (!newItems.find((item) => item.id === c.canvasId)) 
+        if (!newItems.find((item) => item.id === c.canvasId))
           newItems.push({ id: c.canvasId, label: c.label, type: "Canvas", items: [], newItem: true, key: uuidv4() })
       });
       structure.items = newItems;
