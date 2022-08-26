@@ -1,4 +1,4 @@
-import { faRemove, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faRemove } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Layout, Button, Divider } from 'antd';
 import React from 'react';
@@ -33,6 +33,7 @@ function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, onOpenMod
     <Button onClick={onDelete} disabled={!deleteEnabled} title="Delete Selected Structure Items">
       <FontAwesomeIcon icon={faRemove} />
     </Button>
+    <Divider type="vertical" />
     <Button onClick={onSubmit} disabled={!saveManifest} title="Submit ">
       Submit
     </Button>
