@@ -68,6 +68,7 @@ export function updateToken(manifestUrl: string): void {
         value = JSON.parse(localStorage.getItem("mainifest-info") || "{}");
       }
       value["apiKey"] = json['token'] || value["apiKey"];
+      apiKey = value["apiKey"]
       localStorage.setItem("manifest-info", JSON.stringify(value));
     });
   }

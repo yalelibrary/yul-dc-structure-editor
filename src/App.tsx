@@ -45,6 +45,21 @@ function App() {
     }
   }, []);
 
+
+  const timer: { current: NodeJS.Timeout | null } = useRef(null);
+
+  // update the token periodically
+  React.useEffect(() => {
+    if (manifestUrl) {
+      timer.current = setInterval(() => {
+        if (manifestUrl) updateToken(manifestUrl);
+      }, 30000);
+    }
+    return () => {
+      clearInterval(timer.current as NodeJS.Timeout);
+    }
+  }, [manifestUrl]);
+
   const setApiKeyAndManifest = (apiKey: string | null, manifestUrl: string) => {
     setApiKeyGlobal(apiKey);
     manifestLoaded(null);
