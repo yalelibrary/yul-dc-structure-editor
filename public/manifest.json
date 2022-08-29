@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "IIIF Structure Editor",
+  "name": "IIIF Structure Editor for Yale University Library - Digital Collections",
   "icons": [
     {
       "src": "favicon.ico",

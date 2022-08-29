@@ -47,3 +47,30 @@
   color: black;
   background-color: white;
 }
+
+.canvases {
+  height: calc(100vh - 110px);
+}
+
+.canvases-footer {
+  position: fixed;
+  padding-top: 4px;
+  height: 45px;
+  bottom: 0
+}
+
+.display-flex {
+  display: flex;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+header.header {
+  padding: 10px;
+}
+
+.sub-info {
+  font-size: 9px;
+}

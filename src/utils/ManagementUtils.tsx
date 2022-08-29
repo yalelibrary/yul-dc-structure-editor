@@ -1,4 +1,3 @@
-
 export class FetchError extends Error {
 
   status: number;
@@ -11,12 +10,12 @@ export class FetchError extends Error {
   }
 }
 
-let apiKey = "";
-export function setApiKeyGlobal(value: string) {
+let apiKey: string | null = null;
+export function setApiKeyGlobal(value: string | null) {
   apiKey = value;
 }
 
-export function apiFetchJsonUri(token: string, uri: string): Promise<any> {
+export function apiFetchJsonUri(token: string | null, uri: string): Promise<any> {
   let options: any = {
     "cache": "no-cache",
     "mode": "cors",
@@ -37,7 +36,7 @@ export function apiFetchJsonUri(token: string, uri: string): Promise<any> {
 }
 
 
-export function apiPostJsonUri(token: string, uri: string, data: any): Promise<any> {
+export function apiPostJsonUri(token: string | null, uri: string, data: any): Promise<any> {
   let options: any = {
     "method": "post",
     "cache": "no-cache",
@@ -59,7 +58,21 @@ export function apiPostJsonUri(token: string, uri: string, data: any): Promise<a
   })
 }
 
+export function updateToken(manifestUrl: string): void {
+  let urlParts = manifestUrl.split("/")
+  if (urlParts.length > 3) {
+    let renewUrl = [...urlParts.slice(0, urlParts.length - 3), "update_token"].join("/");
+    apiFetchJsonUri(apiKey, renewUrl).then((json) => {
+      let value: any = {};
+      if (localStorage.getItem("mainifest-info")) {
+        value = JSON.parse(localStorage.getItem("mainifest-info") || "{}");
+      }
+      value["apiKey"] = json['token'] || value["apiKey"];
+      localStorage.setItem("manifest-info", JSON.stringify(value));
+    });
+  }
 
+}
 
 export function downloadManifest(manifestUrl: string): Promise<any> {
   return apiFetchJsonUri(apiKey, manifestUrl);
