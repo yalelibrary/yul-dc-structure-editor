@@ -21,6 +21,7 @@ function App() {
   const [selectStart, setSelectStart] = useState<string | null>(null);
   const [selectedStructureKeys, setSelectedStructureKeys] = useState<string[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [showOpenManifest, setShowOpenManifest] = useState<boolean>(true);
 
 
   const componentLoaded = useRef(false);
@@ -31,15 +32,18 @@ function App() {
       let params = new URLSearchParams(window.location.search);
       if (params.get("manifest") && params.get("token")) {
         setApiKeyAndManifest(params.get("token"), params.get("manifest") || "");
+        setShowOpenManifest(false);
         params.delete("token");
         let url = new URL(window.location.href);
         url.search = params.toString();
-        window.history.replaceState({ path: url.href }, "", url.href)
+        window.history.replaceState({ path: url.href }, "", url.href);
       } else {
         let storage: any = localStorage.getItem("manifest-info")
         if (storage && (storage = JSON.parse(storage))) {
-          if (new Date().getTime() - new Date(storage["stored"]).getTime() < 1000 * 60 * 60 * 3)
+          if (new Date().getTime() - new Date(storage["stored"]).getTime() < 1000 * 60 * 60 * 3) {
             setApiKeyAndManifest(storage["apiKey"], storage["manifest"]);
+            setShowOpenManifest(false);
+          }
         }
       }
     }
@@ -195,7 +199,7 @@ function App() {
 
   return (
     <Layout className="main-container">
-      <TopHeader onOpenModal={handleOpenModal}
+      <TopHeader onOpenModal={handleOpenModal} showOpenManifest={showOpenManifest}
         manifestUrl={manifestUrl || ""}
         onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureKeys.length === 0 || isSingleRangeSelected() || structureInfo.length === 0}
         onAddCanvas={handleOnAddCanvases} addCanvasEnabled={isSingleRangeSelected() && selectedCanvasIds.length > 0}

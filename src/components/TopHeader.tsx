@@ -9,6 +9,7 @@ class TopHeaderProps {
   addCanvasEnabled: boolean = true;
   deleteEnabled: boolean = true;
   saveManifest: boolean = true;
+  showOpenManifest: boolean = true;
   manifestUrl!: string;
   onOpenModal!: (() => void);
   onAddRange!: (() => void);
@@ -17,13 +18,14 @@ class TopHeaderProps {
   onSubmit!: (() => void);
 }
 
-function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, manifestUrl, onOpenModal, onAddRange, onAddCanvas, onDelete, onSubmit, saveManifest }: TopHeaderProps) {
+function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, manifestUrl, showOpenManifest, onOpenModal, onAddRange, onAddCanvas, onDelete, onSubmit, saveManifest }: TopHeaderProps) {
 
   return (<Header className='header'>
     <div className='display-flex'>
-      <Button onClick={onOpenModal}>
-        Get Manifest
-      </Button>
+      {showOpenManifest &&
+        <Button onClick={onOpenModal}>
+          Get Manifest
+        </Button>}
       <Divider type="vertical" />
       <Button onClick={onAddRange} disabled={!addRangeEnabled}>
         Range +
