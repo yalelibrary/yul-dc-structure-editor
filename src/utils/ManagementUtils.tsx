@@ -64,7 +64,7 @@ export function updateToken(manifestUrl: string): void {
     let renewUrl = [...urlParts.slice(0, urlParts.length - 3), "update_token"].join("/");
     apiFetchJsonUri(apiKey, renewUrl).then((json) => {
       let value: any = {};
-      if (localStorage.getItem("mainifest-info")) {
+      if (localStorage.getItem("manifest-info")) {
         value = JSON.parse(localStorage.getItem("mainifest-info") || "{}");
       }
       value["apiKey"] = json['token'] || value["apiKey"];
