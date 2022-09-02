@@ -74,3 +74,14 @@ header.header {
 .sub-info {
   font-size: 9px;
 }
+
+.close-btn {
+  padding: 0 5px;
+  color: white;
+  background: #aaa;
+  border-radius: 2px;
+  line-height: 36px;
+  position: relative;
+  top: -15px;
+  left: 10px;
+}
