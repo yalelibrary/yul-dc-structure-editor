@@ -1,24 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Rectangle } from '../utils/IIIFUtils';
+import { Position } from '../utils/IIIFUtils';
 
 class PartialCanvasSelectorProps {
     imageId?: string;
     maxWidthHeight!: number;
-    onRectangleSelected?: (rect: Rectangle) => void;
-    onSvgSelected?: (points: Position[]) => void;
+    onSvgSelected?: (polygons: Position[][]) => void;
 };
 
-type Position = {
-    x: number;
-    y: number;
-}
+function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onSvgSelected }: PartialCanvasSelectorProps) {
 
-function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onRectangleSelected }: PartialCanvasSelectorProps) {
-
-    const [boxStart, setBoxStart] = useState<Position | null>(null);
-    const [boxEnd, setBoxEnd] = useState<Position | null>(null);
-    const [boxRect, setBoxRect] = useState<Rectangle | null>(null);
     const [mouseIsDown, setMouseIsDown] = useState<boolean>(false);
+    const [mousePosition, setMousePosition] = useState<Position | null>(null);
     const [svgPositions, setSvgPositions] = useState<Position[]>([]);
     let imageRef = useRef<HTMLImageElement>(null);
     let imageCanvas = useRef<HTMLCanvasElement>(null);
@@ -38,6 +30,7 @@ function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onRectangleSelected
                 context.clearRect(0, 0, imageCanvas.current.width, imageCanvas.current.height);
                 context.strokeStyle = 'red';
                 context.lineWidth = 5;
+                context.lineJoin = "round";
                 if (svgPositions.length > 0) {
                     context.beginPath();
                     context.moveTo(svgPositions[0].x, svgPositions[0].y);
@@ -46,11 +39,30 @@ function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onRectangleSelected
                     }
                     context.closePath();
                     context.stroke();
-                }
 
+                    context.strokeStyle = 'blue';
+                    context.fillStyle = 'orange';
+                    let m = 8;
+
+                    for (let i = 0; i < svgPositions.length; i++) {
+                        let pos = svgPositions[i];
+                        context.beginPath();
+                        context.fillStyle = 'green';
+                        context.strokeStyle = 'blue';
+                        if (mousePosition) {
+                            if (Math.abs(pos.x - mousePosition.x) < m && Math.abs(pos.y - mousePosition.y) < m) {
+                                context.fillStyle = 'orange';
+                                context.strokeStyle = '#30F';
+                            }
+                        }
+                        context.arc(pos.x, pos.y, 5, 0, 2 * Math.PI, true);
+                        context.fill();
+                        context.stroke();
+                    }
+                }
             }
         }
-    }, [svgPositions]);
+    }, [svgPositions, mousePosition]);
 
     // clear selection when image changes.
     useEffect(() => {
@@ -75,20 +87,19 @@ function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onRectangleSelected
         let p = extractMousePosition(event);
         // if it's near an existing point, reorder positions so that it's last, otherwise add a new one
         let m = 8;
-        for (let i = 0; i < svgPositions.length - 1; i++) {
+        for (let i = 0; i < svgPositions.length; i++) {
             let pos = svgPositions[i];
-            if (Math.abs(pos.x - p.x) < m && Math.abs(pos.x - p.x) < m) {
-                // close enough
+            if (Math.abs(pos.x - p.x) < m && Math.abs(pos.y - p.y) < m) {
+                console.log("Matching on " + i);
                 let newPositions: Position[];
                 if (i === 0) {
                     newPositions = svgPositions.slice(1);
                 } else if (i + 1 < svgPositions.length) {
                     newPositions = svgPositions.slice(i + 1);
-                } else {
-                    newPositions = [];
-                }
-                if (i > 0) {
                     newPositions = newPositions.concat(svgPositions.slice(0, i));
+                } else {
+                    console.log("Breaking out");
+                    return;
                 }
                 newPositions.push(svgPositions[i]);
                 setSvgPositions(newPositions);
@@ -99,18 +110,19 @@ function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onRectangleSelected
     }
 
     const handleMouseMove = (event: any) => {
+        let p = extractMousePosition(event);
         if (mouseIsDown && svgPositions.length > 0) {
-            let p = extractMousePosition(event);
             svgPositions[svgPositions.length - 1].x = p.x;
             svgPositions[svgPositions.length - 1].y = p.y;
             setSvgPositions([...svgPositions]);
         }
+        setMousePosition(p);
     }
 
     const handleMouseUp = (e: any) => {
         setMouseIsDown(false);
-        if (boxRect && onRectangleSelected) {
-            onRectangleSelected(boxRect);
+        if (svgPositions && svgPositions.length > 2 && onSvgSelected) {
+            onSvgSelected([svgPositions]);
         }
     }
 
@@ -141,7 +153,7 @@ function PartialCanvasSVGSelector({ imageId, maxWidthHeight, onRectangleSelected
                 onDragStart={() => false}
                 draggable={false}
                 onSelect={() => false}
-                src={imgSrc} alt="cropping image" />
+                src={imgSrc} alt="cropping" />
         </div>
     );
 }

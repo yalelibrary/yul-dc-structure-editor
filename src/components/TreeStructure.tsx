@@ -16,9 +16,10 @@ class TreeStructureProps {
   onStructureInfoChange!: ((structureInfo: ManifestStructureInfo[]) => void);
   onSelectedKeysChange!: ((keys: string[]) => void);
   onExpandedKeysChange!: ((keys: string[]) => void);
+  onShowCanvas!: ((id: string) => void);
 }
 
-function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, onSelectedKeysChange, onStructureInfoChange, onExpandedKeysChange }: TreeStructureProps) {
+function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, onSelectedKeysChange, onStructureInfoChange, onExpandedKeysChange, onShowCanvas }: TreeStructureProps) {
 
   const [selectionStart, setSelectionStart] = useState<string | null>(null);
   const [dragStructure, setDragStructure] = useState<ManifestStructureInfo | null>(null);
@@ -111,13 +112,13 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       let imageThumb = null;
       let title: React.ReactNode = info.label;
       let key = info.key;
-      let imageIconSrc;
+      let imageIconSrc: any;
       if (info.type === "Range") {
         title = <EditableText defaultValue={info.label} onSave={(v) => handleOnSave(v, info.key)} />
       } else {
         imageIconSrc = lookupCanvasThumbnail(info.id);
         if (imageIconSrc) {
-          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" />
+          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" onDoubleClick={(e) => onShowCanvas(imageIconSrc || "")} />
         }
       }
       let spanTitle: any;
@@ -127,7 +128,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       } else if (info.type === "Canvas") {
         icon = (imageThumb || <FontAwesomeIcon icon={faImage} />)
       } else if (info.type === "SpecificResource") {
-        icon = imageIconSrc && <PartialImageIcon imageId={imageIconSrc} rectangle={info.rectangle} ratio={20 / Math.max(info.width!, info.height!)} /> || <FontAwesomeIcon icon={faImage} />
+        icon = (imageIconSrc && <PartialImageIcon imageId={imageIconSrc} rectangle={info.rectangle} ratio={20 / Math.max(info.width!, info.height!)} />) || <FontAwesomeIcon icon={faImage} />
         spanTitle = info.label + (info.rectangle && ` cropped to (${info.rectangle.x}, ${info.rectangle.y}, ${info.rectangle.w}, ${info.rectangle.h})`);
       }
       title = <span title={spanTitle}><span onClick={(e) => { handleNodeClicked(e, info.key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, info.key, false) }}>{title}</span></span>

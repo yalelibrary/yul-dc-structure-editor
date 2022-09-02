@@ -1,4 +1,4 @@
-import { faRemove } from '@fortawesome/free-solid-svg-icons';
+import { faDrawPolygon, faRemove, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Layout, Button, Divider } from 'antd';
 import React from 'react';
@@ -9,33 +9,49 @@ class TopHeaderProps {
   addCanvasEnabled: boolean = true;
   addPartialCanvasEnabled?: boolean = true;
   deleteEnabled: boolean = true;
+  saveManifest: boolean = true;
+  showOpenManifest: boolean = true;
+  manifestUrl!: string;
   onOpenModal!: (() => void);
   onAddRange!: (() => void);
   onAddCanvas!: (() => void);
   onAddPartialCanvas?: (() => void);
+  onAddPartialSVGCanvas?: (() => void);
   onDelete!: (() => void);
+  onSubmit!: (() => void);
 }
 
-function TopHeader({ addRangeEnabled, addCanvasEnabled, addPartialCanvasEnabled, deleteEnabled, onOpenModal, onAddRange, onAddCanvas, onAddPartialCanvas, onDelete }: TopHeaderProps) {
 
-  return (<Header className='display-flex header'>
-    <Button onClick={onOpenModal}>
-      Get Manifest
-    </Button>
-    <Divider type="vertical" />
-    <Button onClick={onAddRange} disabled={!addRangeEnabled}>
-      Range +
-    </Button>
-    <Button onClick={onAddCanvas} disabled={!addCanvasEnabled}>
-      Canvas +
-    </Button>
-    <Button onClick={onAddPartialCanvas} disabled={!addPartialCanvasEnabled}>
-      Partial Canvas +
-    </Button>
-    <Divider type="vertical" />
-    <Button onClick={onDelete} disabled={!deleteEnabled} title="Delete Selected Structure Items">
-      <FontAwesomeIcon icon={faRemove} />
-    </Button>
+function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, manifestUrl, showOpenManifest, addPartialCanvasEnabled, saveManifest, onOpenModal, onAddRange, onAddCanvas, onDelete, onAddPartialCanvas, onAddPartialSVGCanvas, onSubmit }: TopHeaderProps) {
+
+  return (<Header className='header'>
+    <div className='display-flex'>
+      {showOpenManifest &&
+        <Button onClick={onOpenModal}>
+          Get Manifest
+        </Button>}
+      <Divider type="vertical" />
+      <Button onClick={onAddRange} disabled={!addRangeEnabled}>
+        Range +
+      </Button>
+      <Button onClick={onAddCanvas} disabled={!addCanvasEnabled}>
+        Canvas +
+      </Button>
+      <Button onClick={onAddPartialCanvas} disabled={!addPartialCanvasEnabled}>
+        <FontAwesomeIcon icon={faSquarePlus} />
+      </Button>
+      <Button onClick={onAddPartialSVGCanvas} disabled={!addPartialCanvasEnabled}>
+        <FontAwesomeIcon icon={faDrawPolygon} />
+      </Button>
+      <Divider type="vertical" />
+      <Button onClick={onDelete} disabled={!deleteEnabled} title="Delete Selected Structure Items">
+        <FontAwesomeIcon icon={faRemove} />
+      </Button>
+      <Divider type="vertical" className='flex-grow' />
+      <Button onClick={onSubmit} disabled={!saveManifest} title={`Submit to ${manifestUrl}`}>
+        Submit
+      </Button>
+    </div>
   </Header>);
 }
 

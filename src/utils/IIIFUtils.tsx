@@ -20,6 +20,10 @@ export function extractIIIFWidthHeight(item: any): { width: number, height: numb
   return { width, height };
 }
 
+export type Position = {
+  x: number;
+  y: number;
+}
 
 export type Rectangle = {
   x: number;
@@ -51,6 +55,7 @@ export type ManifestStructureInfo = {
   width?: number;
   height?: number;
   rectangle?: Rectangle;
+  svg?: string;
 }
 
 export function canvasInfoFromManifest(manifestData: any): ManifestCanvasInfo[] | null {
@@ -111,6 +116,22 @@ export function structureInfoFromManifest(manifestData: any): ManifestStructureI
   return structures;
 }
 
+export function manifestFromStructureInfo(structureInfo: ManifestStructureInfo[]): any[] | null {
+  let structure: any[] | null = [];
+
+  if (structureInfo) {
+    for (let s of structureInfo) {
+      console.log(s);
+      if (s.type === "Canvas") {
+        structure.push({ type: "Canvas", id: s.id })
+      } else if (s.type === "Range") {
+        structure.push({ type: "Range", id: s.id, items: manifestFromStructureInfo(s.items), label: { 'en': [s.label] } })
+      }
+    }
+  }
+  return structure;
+}
+
 function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any, itemIdToWidthHeightMap: any): ManifestStructureInfo {
   let label = extractIIIFLabel(structure, "");
   let id = structure["id"];
@@ -159,7 +180,8 @@ function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any,
     let idParts = id.split("/");
     label += ": (" + idParts[idParts.length - 1] + ")";
   }
-  return { label, id, type, newItem: false, items, rectangle, height, width, key: uuidv4() };
+  let key = (type === "Canvas") ? uuidv4() : id;
+  return { label, id, type, newItem: false, items, rectangle, height, width, key: key };
 }
 
 // recursively look trough the tree to find the structure by key
@@ -220,13 +242,25 @@ export function addPartialCavasToRange(structureInfo: ManifestStructureInfo[], i
       rectangle.y = Math.round(rectangle.y);
       rectangle.w = Math.round(rectangle.w);
       rectangle.h = Math.round(rectangle.h);
-      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: rectangle, width: canvasInfo.width, height: canvasInfo.height }
+      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: undefined, width: canvasInfo.width, height: canvasInfo.height }
       let newItems = [...structure.items, newItem];
       structure.items = newItems;
     }
   });
   return [...structureInfo];
 }
+
+export function addPartialSVGCavasToRange(structureInfo: ManifestStructureInfo[], key: string, canvasInfo: ManifestCanvasInfo, positions: Position[][]): ManifestStructureInfo[] {
+  findStructureByKey(structureInfo, key, (structure) => {
+    if (structure.type === "Range") {
+      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: undefined, svg: positionsToSvg(positions), width: canvasInfo.width, height: canvasInfo.height }
+      let newItems = [...structure.items, newItem];
+      structure.items = newItems;
+    }
+  });
+  return [...structureInfo];
+}
+
 
 export function deleteItemsByKey(structureInfo: ManifestStructureInfo[], keys: string[]): ManifestStructureInfo[] {
   let initial: ManifestStructureInfo[] = [];
@@ -246,4 +280,24 @@ export function allStructureKeys(structureInfo: ManifestStructureInfo[] | null, 
     allStructureKeys(info.items, ids);
   }
   return ids;
+}
+
+export function imageToInfo(url: string) {
+  let imageIdComponents = url.split("/");
+  imageIdComponents = imageIdComponents.slice(0, imageIdComponents.length - 4);
+  imageIdComponents.push("info.json")
+  return imageIdComponents.join("/");
+}
+
+function positionsToSvg(positions: Position[][]): string | undefined {
+  let s = "";
+  for (let polygon of positions) {
+    for (let point of polygon) {
+      let b = (point === polygon[0]) ? "M " : "L "
+      b += `${point.x} ${point.y} `;
+      s += b;
+    }
+  }
+  s = "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g><path d=\"" + s + '" /></g></svg>';
+  return s;
 }
