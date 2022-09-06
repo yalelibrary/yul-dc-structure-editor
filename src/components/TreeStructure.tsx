@@ -128,8 +128,8 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       } else if (info.type === "Canvas") {
         icon = (imageThumb || <FontAwesomeIcon icon={faImage} />)
       } else if (info.type === "SpecificResource") {
-        icon = (imageIconSrc && <PartialImageIcon imageId={imageIconSrc} rectangle={info.rectangle} ratio={20 / Math.max(info.width!, info.height!)} />) || <FontAwesomeIcon icon={faImage} />
-        spanTitle = info.label + (info.rectangle && ` cropped to (${info.rectangle.x}, ${info.rectangle.y}, ${info.rectangle.w}, ${info.rectangle.h})`);
+        icon = (imageIconSrc && <PartialImageIcon imageId={imageIconSrc} rectangle={info.rectangle} svg={info.svg} ratio={20 / Math.max(info.width!, info.height!)} />) || <FontAwesomeIcon icon={faImage} />
+        spanTitle = info.label + ((info.rectangle && ` cropped to (${info.rectangle.x}, ${info.rectangle.y}, ${info.rectangle.w}, ${info.rectangle.h})`) || ' cropped to shape');
       }
       title = <span title={spanTitle}><span onClick={(e) => { handleNodeClicked(e, info.key, true) }}>{icon}</span> <span onClick={(e) => { handleNodeClicked(e, info.key, false) }}>{title}</span></span>
       let children = info.items && mapStructureToDataNodes(info.items);

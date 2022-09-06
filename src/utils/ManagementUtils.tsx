@@ -47,6 +47,10 @@ export function apiPostJsonUri(token: string | null, uri: string, data: any): Pr
     let headers = { "Authorization": "Bearer " + token };
     options["headers"] = headers;
     options["credentials"] = "include";
+  } else {
+    return new Promise(() => {
+      return null;
+    });
   }
   return fetch(uri, options).then(async response => {
     if (response.ok) {
@@ -59,6 +63,7 @@ export function apiPostJsonUri(token: string | null, uri: string, data: any): Pr
 }
 
 export function updateToken(manifestUrl: string): void {
+  if (!apiKey) return;
   let urlParts = manifestUrl.split("/")
   if (urlParts.length > 3) {
     let renewUrl = [...urlParts.slice(0, urlParts.length - 3), "update_token"].join("/");

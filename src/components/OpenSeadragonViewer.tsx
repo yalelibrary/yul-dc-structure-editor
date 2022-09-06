@@ -30,8 +30,9 @@ function OpenSeadragonViewer({ imageUrl, elementId }: OpenSeadragonViewerProps) 
                     maxZoomPixelRatio: 2,
                     visibilityRatio: 1,
                     zoomPerScroll: 2,
+                    preload: true
                 });
-
+            viewerRef.current.setControlsEnabled(true);
         }
         catch (e) {
             viewerRef.current = null;

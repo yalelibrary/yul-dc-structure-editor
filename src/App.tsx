@@ -201,6 +201,7 @@ function App() {
   }
 
   const showAddPartialCanvasSVGImageDiagloe = () => {
+    setSelectedImageSvg(null);
     setIsPartialSVGModalVisible(true);
 
   }
@@ -238,14 +239,16 @@ function App() {
         let ratio = Math.max(selectedCanvas.width!, selectedCanvas.height!) / partialSelectorMaxSize;
         let newPositions: Position[][] = [];
         for (let polygon of selectedImageSvg) {
+          let newPoly: Position[] = [];
           for (let pos of polygon) {
-            pos.x = pos.x * ratio;
-            pos.y = pos.y * ratio;
+            newPoly.push({ x: pos.x * ratio, y: pos.y * ratio });
           }
-          newPositions.push(polygon);
+          newPositions.push(newPoly);
         }
         let newStructureInfo = addPartialSVGCavasToRange(structureInfo, selectedStructureKeys[0], selectedCanvas, newPositions);
-        setStructureInfo(newStructureInfo);
+        if (newStructureInfo !== structureInfo) {
+          setStructureInfo(newStructureInfo);
+        }
       }
     }
   }

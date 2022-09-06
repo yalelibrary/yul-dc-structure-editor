@@ -1,4 +1,4 @@
-import { faDrawPolygon, faRemove, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+import { faDrawPolygon, faRemove, faVectorSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Layout, Button, Divider } from 'antd';
 import React from 'react';
@@ -38,7 +38,7 @@ function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, manifestU
         Canvas +
       </Button>
       <Button onClick={onAddPartialCanvas} disabled={!addPartialCanvasEnabled}>
-        <FontAwesomeIcon icon={faSquarePlus} />
+        <FontAwesomeIcon icon={faVectorSquare} />
       </Button>
       <Button onClick={onAddPartialSVGCanvas} disabled={!addPartialCanvasEnabled}>
         <FontAwesomeIcon icon={faDrawPolygon} />

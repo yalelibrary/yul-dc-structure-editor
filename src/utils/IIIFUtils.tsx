@@ -167,7 +167,22 @@ function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any,
           rectangle = { x: parseInt(rect[0]), y: parseInt(rect[1]), w: parseInt(rect[2]), h: parseInt(rect[3]) };
         }
       }
+    } else if (selector["type"] === "SvgSelector") {
+      let svg = selector["value"];
+      let ix = svg.indexOf("<path d=");
+      let s = svg.substring(ix);
+      let del = s[0];
+      s = s.substring(1);
+      s = s.substring(0, s.indexOf(del)).trim();
+      // split where letter and number meet, at commas, and at spaces
+      svg = s;
     }
+
+
+    // "selector": {
+    //   "type": "SvgSelector",
+    //   "value": "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g><path d='M270.000000,1900.000000 L1530.000000,1900.000000 L1530.000000,1610.000000 L1315.000000,1300.000000 L1200.000000,986.000000 L904.000000,661.000000 L600.000000,986.000000 L500.000000,1300.000000 L270,1630 L270.000000,1900.000000' /></g></svg>"
+    // }"
   }
   if (type !== "Range") {
     label = itemIdToLabelMap[id];
@@ -242,7 +257,7 @@ export function addPartialCavasToRange(structureInfo: ManifestStructureInfo[], i
       rectangle.y = Math.round(rectangle.y);
       rectangle.w = Math.round(rectangle.w);
       rectangle.h = Math.round(rectangle.h);
-      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: undefined, width: canvasInfo.width, height: canvasInfo.height }
+      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: rectangle, width: canvasInfo.width, height: canvasInfo.height }
       let newItems = [...structure.items, newItem];
       structure.items = newItems;
     }
@@ -251,9 +266,12 @@ export function addPartialCavasToRange(structureInfo: ManifestStructureInfo[], i
 }
 
 export function addPartialSVGCavasToRange(structureInfo: ManifestStructureInfo[], key: string, canvasInfo: ManifestCanvasInfo, positions: Position[][]): ManifestStructureInfo[] {
+  if (!positions?.find((p) => p.length > 0)) {
+    return structureInfo;
+  }
   findStructureByKey(structureInfo, key, (structure) => {
     if (structure.type === "Range") {
-      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: undefined, svg: positionsToSvg(positions), width: canvasInfo.width, height: canvasInfo.height }
+      let newItem: ManifestStructureInfo = { id: canvasInfo.canvasId, label: canvasInfo.label, type: "SpecificResource", items: [], newItem: true, key: uuidv4(), rectangle: undefined, svg: positionsToSvgPath(positions), width: canvasInfo.width, height: canvasInfo.height }
       let newItems = [...structure.items, newItem];
       structure.items = newItems;
     }
@@ -289,7 +307,7 @@ export function imageToInfo(url: string) {
   return imageIdComponents.join("/");
 }
 
-function positionsToSvg(positions: Position[][]): string | undefined {
+function positionsToSvgPath(positions: Position[][]): string | undefined {
   let s = "";
   for (let polygon of positions) {
     for (let point of polygon) {
@@ -298,6 +316,5 @@ function positionsToSvg(positions: Position[][]): string | undefined {
       s += b;
     }
   }
-  s = "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g><path d=\"" + s + '" /></g></svg>';
   return s;
 }
