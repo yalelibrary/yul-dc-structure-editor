@@ -59,6 +59,7 @@ export function apiPostJsonUri(token: string | null, uri: string, data: any): Pr
 }
 
 export function updateToken(manifestUrl: string): void {
+  if (!apiKey) return;
   let urlParts = manifestUrl.split("/")
   if (urlParts.length > 3) {
     let renewUrl = [...urlParts.slice(0, urlParts.length - 3), "update_token"].join("/");
