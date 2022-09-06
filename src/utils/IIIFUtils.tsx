@@ -91,9 +91,9 @@ export function manifestFromStructureInfo(structureInfo: ManifestStructureInfo[]
     for (let s of structureInfo) {
       console.log(s);
       if (s.type === "Canvas") {
-        structure.push({type:"Canvas", id: s.id})
+        structure.push({ type: "Canvas", id: s.id })
       } else if (s.type === "Range") {
-        structure.push({type:"Range", id: s.id, items: manifestFromStructureInfo(s.items), label: {'en':[s.label]}})
+        structure.push({ type: "Range", id: s.id, items: manifestFromStructureInfo(s.items), label: { 'en': [s.label] } })
       }
     }
   }
@@ -115,7 +115,8 @@ function extractStructureInfoFromManifest(structure: any, itemIdToLabelMap: any)
     let idParts = id.split("/");
     label += ": (" + idParts[idParts.length - 1] + ")";
   }
-  return { label, id, type, newItem: false, items, key: uuidv4() };
+  let key = (type === "Canvas") ? uuidv4() : id;
+  return { label, id, type, newItem: false, items, key: key };
 }
 
 // recursively look trough the tree to find the structure by key

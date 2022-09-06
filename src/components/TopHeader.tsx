@@ -9,6 +9,8 @@ class TopHeaderProps {
   addCanvasEnabled: boolean = true;
   deleteEnabled: boolean = true;
   saveManifest: boolean = true;
+  showOpenManifest: boolean = true;
+  manifestUrl!: string;
   onOpenModal!: (() => void);
   onAddRange!: (() => void);
   onAddCanvas!: (() => void);
@@ -16,28 +18,30 @@ class TopHeaderProps {
   onSubmit!: (() => void);
 }
 
-function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, onOpenModal, onAddRange, onAddCanvas, onDelete, onSubmit, saveManifest }: TopHeaderProps) {
+function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, manifestUrl, showOpenManifest, onOpenModal, onAddRange, onAddCanvas, onDelete, onSubmit, saveManifest }: TopHeaderProps) {
 
-  return (<Header className='display-flex header'>
-    <Button onClick={onOpenModal}>
-      Get Manifest
-    </Button>
-    <Divider type="vertical" />
-    <Button onClick={onAddRange} disabled={!addRangeEnabled}>
-      Range +
-    </Button>
-    <Button onClick={onAddCanvas} disabled={!addCanvasEnabled}>
-      Canvas +
-    </Button>
-    <Divider type="vertical" />
-    <Button onClick={onDelete} disabled={!deleteEnabled} title="Delete Selected Structure Items">
-      <FontAwesomeIcon icon={faRemove} />
-    </Button>
-    <Divider type="vertical" />
-    <Button onClick={onSubmit} disabled={!saveManifest} title="Submit ">
-      Submit
-    </Button>
-
+  return (<Header className='header'>
+    <div className='display-flex'>
+      {showOpenManifest &&
+        <Button onClick={onOpenModal}>
+          Get Manifest
+        </Button>}
+      <Divider type="vertical" />
+      <Button onClick={onAddRange} disabled={!addRangeEnabled}>
+        Range +
+      </Button>
+      <Button onClick={onAddCanvas} disabled={!addCanvasEnabled}>
+        Canvas +
+      </Button>
+      <Divider type="vertical" />
+      <Button onClick={onDelete} disabled={!deleteEnabled} title="Delete Selected Structure Items">
+        <FontAwesomeIcon icon={faRemove} />
+      </Button>
+      <Divider type="vertical" className='flex-grow' />
+      <Button onClick={onSubmit} disabled={!saveManifest} title={`Submit to ${manifestUrl}`}>
+        Submit
+      </Button>
+    </div>
   </Header>);
 }
 

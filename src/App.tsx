@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { Layout, Modal } from 'antd';
-import { downloadManifest, saveManifest, setApiKeyGlobal } from './utils/ManagementUtils';
+import { downloadManifest, saveManifest, setApiKeyGlobal, updateToken } from './utils/ManagementUtils';
 import TopHeader from './components/TopHeader'
 import ImageCanvases from './components/ImageCanvases'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, manifestFromStructureInfo, addNewRange, allStructureKeys, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, manifestFromStructureInfo, addNewRange, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey, allStructureKeys, extractIIIFLabel } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
 const { Sider, Content } = Layout;
@@ -21,17 +21,62 @@ function App() {
   const [selectStart, setSelectStart] = useState<string | null>(null);
   const [selectedStructureKeys, setSelectedStructureKeys] = useState<string[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [showOpenManifest, setShowOpenManifest] = useState<boolean>(true);
+
+
+  const componentLoaded = useRef(false);
 
   useEffect(() => {
-    let canvasInfo = canvasInfoFromManifest(loadedManifest);
-    canvasInfo && setCanvasInfo(canvasInfo);
-    setSelectStart(null);
-    setSelectedCanvasIds([]);
-    let structureInfo = structureInfoFromManifest(loadedManifest);
-    setStructureInfo(structureInfo || []);
-    setExpandedKeys(allStructureKeys(structureInfo))
-    setSelectedStructureKeys([]);
-  }, [loadedManifest])
+    if (!componentLoaded.current) {
+      componentLoaded.current = true;
+      let params = new URLSearchParams(window.location.search);
+      if (params.get("manifest") && params.get("token")) {
+        setApiKeyAndManifest(params.get("token"), params.get("manifest") || "");
+        setShowOpenManifest(false);
+        params.delete("token");
+        let url = new URL(window.location.href);
+        url.search = params.toString();
+        window.history.replaceState({ path: url.href }, "", url.href);
+      } else {
+        let storage: any = localStorage.getItem("manifest-info")
+        if (storage && (storage = JSON.parse(storage))) {
+          if (new Date().getTime() - new Date(storage["stored"]).getTime() < 1000 * 60 * 60 * 3) {
+            setApiKeyAndManifest(storage["apiKey"], storage["manifest"]);
+            setShowOpenManifest(false);
+          }
+        }
+      }
+    }
+  }, []);
+
+
+  const timer: { current: NodeJS.Timeout | null } = useRef(null);
+
+  // update the token periodically
+  React.useEffect(() => {
+    if (manifestUrl) {
+      timer.current = setInterval(() => {
+        if (manifestUrl) updateToken(manifestUrl);
+      }, 30000);
+    }
+    return () => {
+      clearInterval(timer.current as NodeJS.Timeout);
+    }
+  }, [manifestUrl]);
+
+  const setApiKeyAndManifest = (apiKey: string | null, manifestUrl: string) => {
+    setApiKeyGlobal(apiKey);
+    manifestLoaded(null);
+    downloadManifest(manifestUrl).then((manifest) => {
+      manifestLoaded(manifest);
+      setManifestUrl(manifestUrl);
+      // set the apiKey and manifest URL somewhere
+      localStorage.setItem("manifest-info", JSON.stringify({ manifest: manifestUrl, apiKey: apiKey, stored: new Date() }))
+      showInfo("Success", <div><h3>Manifest Downloaded: {extractIIIFLabel(manifest, "No Label")}</h3><div className='sub-info'>From: {manifestUrl}</div></div>);
+    }).catch((error) => {
+      showError("Unable to download", error.response?.message || "Error Downloading Manifest");
+    });
+  }
 
   const showError = (title: string, content: string) => {
     Modal.error({
@@ -40,7 +85,7 @@ function App() {
     });
   };
 
-  const showInfo = (title: string, content: string) => {
+  const showInfo = (title: string, content: ReactNode) => {
     Modal.info({
       title: title,
       content: content,
@@ -49,18 +94,6 @@ function App() {
 
   const handleOpenModal = () => {
     setIsOpenManifestModalVisible(true);
-  }
-
-  const setApiKeyAndManifest = (apiKey: string, manifestUrl: string) => {
-    setApiKeyGlobal(apiKey);
-    setLoadedManifest(null);
-    downloadManifest(manifestUrl).then((manifest) => {
-      setLoadedManifest(manifest);
-      setManifestUrl(manifestUrl);
-      showInfo("Success", "Manifest Downloaded");
-    }).catch((error) => {
-      showError("Unable to download", error.response?.message || "Error Downloading Manifest");
-    });
   }
 
   const handleCanvasClicked = (canvasId: string, shiftKey: boolean, metaKey: boolean) => {
@@ -139,12 +172,24 @@ function App() {
     }
   }
 
+  const manifestLoaded = (manifest: any) => {
+    setLoadedManifest(manifest);
+    let canvasInfo = canvasInfoFromManifest(manifest);
+    setCanvasInfo(canvasInfo || []);
+    setSelectStart(null);
+    let structureInfo = structureInfoFromManifest(manifest);
+    setStructureInfo(structureInfo || []);
+    let allKeys = allStructureKeys(structureInfo);
+    setExpandedKeys(expandedKeys.filter((e) => allKeys.includes(e)));
+    setSelectedStructureKeys(selectedStructureKeys.filter((e) => allKeys.includes(e)));
+  }
+
   const handleSubmit = () => {
     if (manifestUrl) {
       let manifest = { ...loadedManifest }
       manifest['structures'] = manifestFromStructureInfo(structureInfo);
       saveManifest(manifestUrl, manifest).then((manifest) => {
-        setLoadedManifest(manifest);
+        manifestLoaded(manifest);
         showInfo("Success", "Manifest Saved");
       }).catch((error) => {
         showError("Unable to save", error.response?.message || "Error Saving Manifest");
@@ -154,7 +199,8 @@ function App() {
 
   return (
     <Layout className="main-container">
-      <TopHeader onOpenModal={handleOpenModal}
+      <TopHeader onOpenModal={handleOpenModal} showOpenManifest={showOpenManifest}
+        manifestUrl={manifestUrl || ""}
         onAddRange={handleOnAddRange} addRangeEnabled={selectedStructureKeys.length === 0 || isSingleRangeSelected() || structureInfo.length === 0}
         onAddCanvas={handleOnAddCanvases} addCanvasEnabled={isSingleRangeSelected() && selectedCanvasIds.length > 0}
         deleteEnabled={selectedStructureKeys.length > 0} onDelete={handleDelete}
