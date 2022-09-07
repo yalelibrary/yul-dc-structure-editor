@@ -225,7 +225,7 @@ function App() {
           closeIcon={<span className='close-btn'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>}
           cancelButtonProps={{ style: { display: 'none' } }}
         >
-          {iiifUrl && <OpenSeadragonViewer imageUrl={iiifUrl} elementId="OpenSeaDragonViewer" />}
+          {iiifUrl && <OpenSeadragonViewer imageUrl={iiifUrl} />}
         </Modal>
         <Sider className="sider">
           <TreeStructure
