@@ -9,11 +9,12 @@ function OpenSeadragonViewer({ imageUrl }: OpenSeadragonViewerProps) {
     const viewerRef = useRef<OpenSeaDragon.Viewer | null>(null);
     const viewerDivRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
+        if (!viewerDivRef.current) return;
         viewerRef.current && viewerRef.current.destroy();
         try {
             viewerRef.current =
                 OpenSeaDragon({
-                    element: viewerDivRef.current || undefined,
+                    element: viewerDivRef.current!,
                     tileSources: [imageUrl],
                     prefixUrl: 'https://cdn.jsdelivr.net/gh/Benomrans/openseadragon-icons@main/images/',
                     animationTime: 0.5,
