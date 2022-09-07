@@ -26,7 +26,7 @@ function App() {
   const [structureInfo, setStructureInfo] = useState<ManifestStructureInfo[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = useState<string[]>([]);
   const [selectStart, setSelectStart] = useState<string | null>(null);
-  const [iiifUrl, setIiifUrl] = useState<string | undefined>(undefined);
+  const [iiifZoomImageInfo, setIiifZoomImageInfo] = useState<string | undefined>(undefined);
   const [selectedStructureKeys, setSelectedStructureKeys] = useState<string[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [selectedImageRectangle, setSelectedImageRectangle] = useState<Rectangle | null>(null);
@@ -181,7 +181,7 @@ function App() {
   }
 
   const handleShowCanvas = (image: string) => {
-    setIiifUrl(imageToInfo(image));
+    setIiifZoomImageInfo(imageToInfo(image));
   }
 
   const isSingleRangeSelected = (): boolean => {
@@ -297,39 +297,33 @@ function App() {
         <Modal visible={isPartialSVGModalVisible} onOk={handleAddPartialSVGCanvas} onCancel={() => setIsPartialSVGModalVisible(false)} width={partialSelectorMaxSize + 150} className="no-select">
           <PartialCanvasSVGSelector imageId={selectedCanvasImage()?.imageId} onSvgSelected={handleSelectedImageSvg} maxWidthHeight={partialSelectorMaxSize} />
         </Modal>
-
-        <Layout>
-          <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
-          <Modal
-            maskClosable={true}
-            visible={iiifUrl !== undefined}
-            okText={"Close"}
-            onOk={() => setIiifUrl(undefined)}
-            onCancel={() => setIiifUrl(undefined)}
-            closable={true}
-            closeIcon={<span className='close-btn'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>}
-            cancelButtonProps={{ style: { display: 'none' } }}
-          >
-            {iiifUrl && <OpenSeadragonViewer imageUrl={iiifUrl} elementId="OpenSeaDragonViewer" />}
-          </Modal>
-          <Sider className="sider">
-            <TreeStructure
-              selectedKeys={selectedStructureKeys}
-              structureInfo={structureInfo}
-              expandedKeys={expandedKeys}
-              canvasInfo={canvasInfo}
-              onShowCanvas={handleShowCanvas}
-              onStructureInfoChange={setStructureInfo}
-              onSelectedKeysChange={setSelectedStructureKeys}
-              onExpandedKeysChange={setExpandedKeys}
-            />
-          </Sider>
-          <Content>
-            <ImageCanvases canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} maxWidthHeight={200} onCanvasClick={handleCanvasClicked}
-              onShowCanvas={handleShowCanvas}
-            />
-          </Content>
-        </Layout>
+        <Modal
+          maskClosable={true}
+          visible={iiifZoomImageInfo !== undefined}
+          okText={"Close"}
+          onOk={() => setIiifZoomImageInfo(undefined)}
+          onCancel={() => setIiifZoomImageInfo(undefined)}
+          closable={true}
+          closeIcon={<span className='close-btn'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>}
+          cancelButtonProps={{ style: { display: 'none' } }}
+        >
+          {iiifZoomImageInfo && <OpenSeadragonViewer imageUrl={iiifZoomImageInfo} />}
+        </Modal>
+        <Sider className="sider">
+          <TreeStructure
+            selectedKeys={selectedStructureKeys}
+            structureInfo={structureInfo}
+            expandedKeys={expandedKeys}
+            canvasInfo={canvasInfo}
+            onShowCanvas={handleShowCanvas}
+            onStructureInfoChange={setStructureInfo}
+            onSelectedKeysChange={setSelectedStructureKeys}
+            onExpandedKeysChange={setExpandedKeys}
+          />
+        </Sider>
+        <Content>
+          <ImageCanvases canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} maxWidthHeight={200} onCanvasClick={handleCanvasClicked} onShowCanvas={handleShowCanvas} />
+        </Content>
       </Layout>
     </Layout>
   );

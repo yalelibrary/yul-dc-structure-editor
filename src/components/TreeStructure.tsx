@@ -118,7 +118,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       } else {
         imageIconSrc = lookupCanvasThumbnail(info.id);
         if (imageIconSrc) {
-          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" onDoubleClick={(e) => onShowCanvas(imageIconSrc || "")} />
+          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" onDoubleClick={(e) => onShowCanvas(imageIconSrc!)} />
         }
       }
       let spanTitle: any;
