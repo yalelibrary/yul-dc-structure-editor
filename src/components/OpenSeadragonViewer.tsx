@@ -16,7 +16,7 @@ function OpenSeadragonViewer({ imageUrl }: OpenSeadragonViewerProps) {
                 OpenSeaDragon({
                     element: viewerDivRef.current!,
                     tileSources: [imageUrl],
-                    prefixUrl: 'https://cdn.jsdelivr.net/gh/Benomrans/openseadragon-icons@main/images/',
+                    prefixUrl: '//openseadragon.github.io/openseadragon/images/',
                     animationTime: 0.5,
                     autoHideControls: false,
                     blendTime: 0.1,
