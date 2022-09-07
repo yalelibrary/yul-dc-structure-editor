@@ -22,7 +22,7 @@ function App() {
   const [structureInfo, setStructureInfo] = useState<ManifestStructureInfo[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = useState<string[]>([]);
   const [selectStart, setSelectStart] = useState<string | null>(null);
-  const [iiifUrl, setIiifUrl] = useState<string | undefined>(undefined);
+  const [iiifZoomImageInfo, setIiifZoomImageInfo] = useState<string | undefined>(undefined);
   const [selectedStructureKeys, setSelectedStructureKeys] = useState<string[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [showOpenManifest, setShowOpenManifest] = useState<boolean>(true);
@@ -165,7 +165,7 @@ function App() {
   }
 
   const handleShowCanvas = (image: string) => {
-    setIiifUrl(imageToInfo(image));
+    setIiifZoomImageInfo(imageToInfo(image));
   }
 
   const isSingleRangeSelected = (): boolean => {
@@ -217,15 +217,15 @@ function App() {
         <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
         <Modal
           maskClosable={true}
-          visible={iiifUrl !== undefined}
+          visible={iiifZoomImageInfo !== undefined}
           okText={"Close"}
-          onOk={() => setIiifUrl(undefined)}
-          onCancel={() => setIiifUrl(undefined)}
+          onOk={() => setIiifZoomImageInfo(undefined)}
+          onCancel={() => setIiifZoomImageInfo(undefined)}
           closable={true}
           closeIcon={<span className='close-btn'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>}
           cancelButtonProps={{ style: { display: 'none' } }}
         >
-          {iiifUrl && <OpenSeadragonViewer imageUrl={iiifUrl} />}
+          {iiifZoomImageInfo && <OpenSeadragonViewer imageUrl={iiifZoomImageInfo} />}
         </Modal>
         <Sider className="sider">
           <TreeStructure
