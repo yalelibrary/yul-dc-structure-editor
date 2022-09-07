@@ -116,7 +116,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       } else {
         let imageIconSrc = lookupCanvasThumbnail(info.id);
         if (imageIconSrc) {
-          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" onDoubleClick={(e) => onShowCanvas(imageIconSrc || "")} />
+          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" onDoubleClick={(e) => onShowCanvas(imageIconSrc!)} />
         }
       }
       let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} />) : ((expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)
