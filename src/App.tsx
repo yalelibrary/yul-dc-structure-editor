@@ -225,7 +225,7 @@ function App() {
           closeIcon={<span className='close-btn'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>}
           cancelButtonProps={{ style: { display: 'none' } }}
         >
-          {iiifZoomImageInfo && <OpenSeadragonViewer imageUrl={iiifZoomImageInfo} />}
+          {iiifZoomImageInfo && <OpenSeadragonViewer imageUrl={iiifZoomImageInfo} style={{ height: "calc(100vh - 280px)", width: "100%" }} />}
         </Modal>
         <Sider className="sider">
           <TreeStructure

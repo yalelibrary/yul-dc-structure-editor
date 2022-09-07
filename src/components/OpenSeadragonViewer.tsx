@@ -3,9 +3,10 @@ import OpenSeaDragon from "openseadragon";
 
 class OpenSeadragonViewerProps {
     imageUrl!: string;
+    style?: React.CSSProperties
 }
 
-function OpenSeadragonViewer({ imageUrl }: OpenSeadragonViewerProps) {
+function OpenSeadragonViewer({ imageUrl, style }: OpenSeadragonViewerProps) {
     const viewerRef = useRef<OpenSeaDragon.Viewer | null>(null);
     const viewerDivRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
@@ -40,10 +41,7 @@ function OpenSeadragonViewer({ imageUrl }: OpenSeadragonViewerProps) {
     return (
         <div
             ref={viewerDivRef}
-            style={{
-                height: "calc(100vh - 280px)",
-                width: "100%"
-            }}
+            style={style}
         >
         </div>
     );
