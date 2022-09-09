@@ -15,9 +15,10 @@ class TreeStructureProps {
   onStructureInfoChange!: ((structureInfo: ManifestStructureInfo[]) => void);
   onSelectedKeysChange!: ((keys: string[]) => void);
   onExpandedKeysChange!: ((keys: string[]) => void);
+  onShowCanvas!: ((id: string) => void);
 }
 
-function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, onSelectedKeysChange, onStructureInfoChange, onExpandedKeysChange }: TreeStructureProps) {
+function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, onSelectedKeysChange, onStructureInfoChange, onExpandedKeysChange, onShowCanvas }: TreeStructureProps) {
 
   const [selectionStart, setSelectionStart] = useState<string | null>(null);
   const [dragStructure, setDragStructure] = useState<ManifestStructureInfo | null>(null);
@@ -115,7 +116,7 @@ function TreeStructure({ structureInfo, selectedKeys, expandedKeys, canvasInfo, 
       } else {
         let imageIconSrc = lookupCanvasThumbnail(info.id);
         if (imageIconSrc) {
-          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" />
+          imageThumb = <img src={imageIconSrc} alt={info.id} loading="lazy" onDoubleClick={(e) => onShowCanvas(imageIconSrc!)} />
         }
       }
       let icon: any = info.type === "Canvas" ? (imageThumb || <FontAwesomeIcon icon={faImage} />) : ((expandedKeys.includes(info.key) && info.items.length > 0) ? <FontAwesomeIcon icon={faFolderOpen} /> : <FontAwesomeIcon icon={faFolder} />)

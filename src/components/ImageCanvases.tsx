@@ -7,10 +7,11 @@ class ImageListProps {
   selectedCanvasIds: string[] = [];
   canvasInfo: ManifestCanvasInfo[] = [];
   maxWidthHeight: number = 200;
+  onShowCanvas!: ((id: string) => void);
   onCanvasClick?: ((canvasId: string, shiftKey: boolean, metaKey: boolean) => void);
 }
 
-function ImageCanvases({ canvasInfo, selectedCanvasIds, maxWidthHeight, onCanvasClick }: ImageListProps) {
+function ImageCanvases({ canvasInfo, selectedCanvasIds, maxWidthHeight, onCanvasClick, onShowCanvas }: ImageListProps) {
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(50);
@@ -29,7 +30,9 @@ function ImageCanvases({ canvasInfo, selectedCanvasIds, maxWidthHeight, onCanvas
     <div className="canvases">
       <div className='image-list'>
         {canvasInfo.slice(page * pageSize, (page + 1) * pageSize).map((info) => {
-          return <CanvasImage info={info} maxWidthHeight={maxWidthHeight} selected={selectedCanvasIds.includes(info.canvasId)} onClick={(e) => onCanvasClick && onCanvasClick(info.canvasId, e.shiftKey, e.metaKey)} />
+          return <CanvasImage key={info.canvasId} info={info} maxWidthHeight={maxWidthHeight}
+            onDoubleClick={(e) => onShowCanvas(info.imageId)}
+            selected={selectedCanvasIds.includes(info.canvasId)} onClick={(e) => onCanvasClick && onCanvasClick(info.canvasId, e.shiftKey, e.metaKey)} />
         })}
       </div>
       <div className='canvases-footer'>

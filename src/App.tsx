@@ -4,9 +4,12 @@ import { downloadManifest, saveManifest, setApiKeyGlobal, updateToken } from './
 import TopHeader from './components/TopHeader'
 import ImageCanvases from './components/ImageCanvases'
 import LaunchModal from './components/LaunchModal';
-import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, manifestFromStructureInfo, addNewRange, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey, allStructureKeys, extractIIIFLabel } from './utils/IIIFUtils';
+import { canvasInfoFromManifest, ManifestCanvasInfo, ManifestStructureInfo, structureInfoFromManifest, manifestFromStructureInfo, addNewRange, createNewRange, addCavasesToRange, findStructureByKey, deleteItemsByKey, allStructureKeys, extractIIIFLabel, imageToInfo } from './utils/IIIFUtils';
 import './App.css';
 import TreeStructure from './components/TreeStructure';
+import OpenSeadragonViewer from './components/OpenSeadragonViewer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
 const { Sider, Content } = Layout;
 
 
@@ -19,6 +22,7 @@ function App() {
   const [structureInfo, setStructureInfo] = useState<ManifestStructureInfo[]>([]);
   const [selectedCanvasIds, setSelectedCanvasIds] = useState<string[]>([]);
   const [selectStart, setSelectStart] = useState<string | null>(null);
+  const [iiifZoomImageInfo, setIiifZoomImageInfo] = useState<string | undefined>(undefined);
   const [selectedStructureKeys, setSelectedStructureKeys] = useState<string[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [showOpenManifest, setShowOpenManifest] = useState<boolean>(true);
@@ -160,6 +164,10 @@ function App() {
     setSelectedStructureKeys([]);
   }
 
+  const handleShowCanvas = (image: string) => {
+    setIiifZoomImageInfo(imageToInfo(image));
+  }
+
   const isSingleRangeSelected = (): boolean => {
     if (selectedStructureKeys.length !== 1) {
       return false;
@@ -205,22 +213,34 @@ function App() {
         onAddCanvas={handleOnAddCanvases} addCanvasEnabled={isSingleRangeSelected() && selectedCanvasIds.length > 0}
         deleteEnabled={selectedStructureKeys.length > 0} onDelete={handleDelete}
         saveManifest={true} onSubmit={handleSubmit} />
-
       <Layout>
         <LaunchModal isModalVisible={isOpenManifestModalVisible} setIsModalVisible={setIsOpenManifestModalVisible} setApiKeyAndManifest={setApiKeyAndManifest} />
+        <Modal
+          maskClosable={true}
+          visible={iiifZoomImageInfo !== undefined}
+          okText={"Close"}
+          onOk={() => setIiifZoomImageInfo(undefined)}
+          onCancel={() => setIiifZoomImageInfo(undefined)}
+          closable={true}
+          closeIcon={<span className='close-btn'><FontAwesomeIcon icon={faClose}></FontAwesomeIcon></span>}
+          cancelButtonProps={{ style: { display: 'none' } }}
+        >
+          {iiifZoomImageInfo && <OpenSeadragonViewer imageUrl={iiifZoomImageInfo} style={{ height: "calc(100vh - 280px)", width: "100%" }} />}
+        </Modal>
         <Sider className="sider">
           <TreeStructure
             selectedKeys={selectedStructureKeys}
             structureInfo={structureInfo}
             expandedKeys={expandedKeys}
             canvasInfo={canvasInfo}
+            onShowCanvas={handleShowCanvas}
             onStructureInfoChange={setStructureInfo}
             onSelectedKeysChange={setSelectedStructureKeys}
             onExpandedKeysChange={setExpandedKeys}
           />
         </Sider>
         <Content>
-          <ImageCanvases canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} maxWidthHeight={200} onCanvasClick={handleCanvasClicked} />
+          <ImageCanvases canvasInfo={canvasInfo} selectedCanvasIds={selectedCanvasIds} maxWidthHeight={200} onCanvasClick={handleCanvasClicked} onShowCanvas={handleShowCanvas} />
         </Content>
       </Layout>
     </Layout>

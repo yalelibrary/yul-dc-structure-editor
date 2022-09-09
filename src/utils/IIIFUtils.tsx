@@ -188,3 +188,10 @@ export function allStructureKeys(structureInfo: ManifestStructureInfo[] | null, 
   }
   return ids;
 }
+
+export function imageToInfo(url: string) {
+  let imageIdComponents = url.split("/");
+  imageIdComponents = imageIdComponents.slice(0, imageIdComponents.length - 4);
+  imageIdComponents.push("info.json")
+  return imageIdComponents.join("/");
+}
