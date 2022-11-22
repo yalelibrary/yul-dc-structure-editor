@@ -34,7 +34,7 @@ function TopHeader({ addRangeEnabled, addCanvasEnabled, deleteEnabled, manifestU
         Canvas +
       </Button>
       <Divider type="vertical" />
-      <Button onClick={onDelete} disabled={!deleteEnabled} title="Delete Selected Structure Items">
+      <Button onClick={onDelete} disabled={!deleteEnabled} name="delete" title="Delete Selected Structure Items">
         <FontAwesomeIcon icon={faRemove} />
       </Button>
       <Divider type="vertical" className='flex-grow' />
